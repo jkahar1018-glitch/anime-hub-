@@ -1,0 +1,29 @@
+import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+
+const isPublicRoute = createRouteMatcher([
+  "/",
+  "/anime(.*)",
+  "/watch(.*)",
+  "/search(.*)",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+
+  // AI API
+  "/api/ai(.*)",
+
+  // Community Chat / Supabase
+  "/api/community(.*)",
+]);
+
+export default clerkMiddleware(async (auth, request) => {
+  if (!isPublicRoute(request)) {
+    await auth.protect();
+  }
+});
+
+export const config = {
+  matcher: [
+    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
+    "/(api|trpc)(.*)",
+  ],
+};

@@ -1,0 +1,2019 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
+
+@import "tailwindcss";
+
+:root {
+  --orange: #ff6b00;
+  --orange-light: #ff8500;
+
+  --black: #050505;
+  --black-2: #0a0a0a;
+  --panel: #111111;
+  --panel-2: #171717;
+
+  --white: #ffffff;
+  --muted: #a1a1aa;
+
+  --border: rgba(255, 255, 255, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--black);
+  color: white;
+  font-family: "Inter", Arial, sans-serif;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+button {
+  font-family: inherit;
+}
+
+.site {
+  min-height: 100vh;
+  background:
+    radial-gradient(
+      circle at 80% 10%,
+      rgba(255, 107, 0, 0.06),
+      transparent 30%
+    ),
+    #050505;
+}
+
+/* =========================
+   NAVBAR
+========================= */
+
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  height: 78px;
+  background: rgba(5, 5, 5, 0.94);
+  border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(18px);
+}
+
+.nav-inner {
+  width: min(1600px, calc(100% - 48px));
+  height: 100%;
+  margin: auto;
+
+  display: flex;
+  align-items: center;
+  gap: 42px;
+}
+
+.brand {
+  display: flex;
+  flex-direction: column;
+  line-height: 0.85;
+  min-width: 105px;
+}
+
+.brand span {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 5px;
+}
+
+.brand {
+  font-size: 29px;
+  font-weight: 900;
+}
+
+.brand::after {
+  content: ".";
+  color: var(--orange);
+  margin-left: 90px;
+  margin-top: -7px;
+}
+
+.nav-links {
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+
+.nav-links a {
+  color: #cfcfcf;
+  font-size: 15px;
+  font-weight: 700;
+  transition: 0.2s ease;
+}
+
+.nav-links a:hover {
+  color: white;
+}
+
+.nav-links b {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 24px;
+  height: 24px;
+  margin-left: 5px;
+
+  background: var(--orange);
+  color: black;
+  border-radius: 50%;
+
+  font-size: 12px;
+}
+
+.nav-actions {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.search-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 12px 20px;
+  border: 1px solid var(--border);
+  border-radius: 30px;
+
+  color: #ddd;
+  font-weight: 700;
+}
+
+.auth {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.auth button {
+  border: 0;
+  background: transparent;
+  color: white;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.auth .signup {
+  padding: 12px 25px;
+  border-radius: 30px;
+  background: var(--orange);
+  color: black;
+}
+
+.menu-btn {
+  display: none;
+  border: 0;
+  background: transparent;
+  color: white;
+  font-size: 22px;
+}
+
+/* =========================
+   HERO
+========================= */
+
+.hero {
+  position: relative;
+  width: 100%;
+  height: min(720px, calc(100vh - 78px));
+  min-height: 570px;
+  overflow: hidden;
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+}
+
+.hero-bg {
+  object-fit: cover;
+  object-position: center;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      90deg,
+      rgba(0, 0, 0, 0.95) 0%,
+      rgba(0, 0, 0, 0.78) 32%,
+      rgba(0, 0, 0, 0.25) 68%,
+      rgba(0, 0, 0, 0.45) 100%
+    );
+}
+
+.hero-vignette {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      0deg,
+      #050505 0%,
+      transparent 28%
+    );
+}
+
+.hero-content {
+  position: relative;
+  z-index: 2;
+
+  width: min(1600px, calc(100% - 48px));
+  height: 100%;
+  margin: auto;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+
+  padding-bottom: 30px;
+}
+
+.hero-label {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  margin-bottom: 18px;
+
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 2px;
+}
+
+.hero-label span {
+  color: var(--orange);
+}
+
+.hero-label b {
+  color: #ddd;
+}
+
+.hero-content h1 {
+  max-width: 720px;
+  margin: 0 0 18px;
+
+  font-size: clamp(42px, 6vw, 82px);
+  line-height: 0.98;
+  font-weight: 900;
+  letter-spacing: -3px;
+}
+
+.hero-meta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+
+  margin-bottom: 15px;
+
+  color: #ddd;
+  font-weight: 600;
+}
+
+.hero-score {
+  color: #ffd400;
+}
+
+.hero-hd {
+  padding: 3px 7px;
+  border: 1px solid white;
+  border-radius: 4px;
+
+  font-size: 10px;
+  font-weight: 800;
+}
+
+.hero-genres {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.hero-genres span {
+  padding: 6px 10px;
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 20px;
+
+  background: rgba(0, 0, 0, 0.4);
+  color: #ddd;
+
+  font-size: 12px;
+}
+
+.hero-content p {
+  max-width: 650px;
+
+  margin: 0 0 28px;
+
+  color: #d0d0d0;
+  font-size: 15px;
+  line-height: 1.7;
+}
+
+.hero-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.btn-primary,
+.btn-secondary,
+.hero-search-button {
+  min-height: 48px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  padding: 0 22px;
+
+  border-radius: 7px;
+
+  font-weight: 800;
+  transition: 0.2s ease;
+}
+
+.btn-primary {
+  background: var(--orange);
+  color: black;
+}
+
+.btn-primary:hover {
+  background: var(--orange-light);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.17);
+}
+
+.hero-search-button {
+  width: 48px;
+  padding: 0;
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.hero-controls {
+  position: absolute;
+  z-index: 4;
+
+  bottom: 35px;
+  right: 30px;
+
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.hero-controls > button {
+  width: 38px;
+  height: 38px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+
+  background: rgba(0, 0, 0, 0.55);
+  color: white;
+
+  cursor: pointer;
+}
+
+.hero-controls > button:hover {
+  background: var(--orange);
+  color: black;
+}
+
+.hero-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.hero-dots button {
+  width: 22px;
+  height: 4px;
+
+  border: 0;
+  border-radius: 5px;
+
+  background: rgba(255, 255, 255, 0.35);
+  cursor: pointer;
+}
+
+.hero-dots button.active {
+  background: var(--orange);
+  width: 40px;
+}
+
+/* =========================
+   HOME SECTIONS
+========================= */
+
+.home-content {
+  width: min(1600px, calc(100% - 48px));
+  margin: auto;
+}
+
+.featured-home {
+  padding-top: 25px;
+}
+
+.anime-section {
+  padding: 34px 0;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  margin-bottom: 18px;
+}
+
+.section-heading > div {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.section-heading h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.section-heading a {
+  color: #aaa;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.section-heading a:hover {
+  color: var(--orange);
+}
+
+/* =========================
+   ANIME SLIDER
+========================= */
+
+.anime-slider-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.anime-slider-wrapper .swiper {
+  overflow: visible;
+}
+
+.anime-slider-wrapper .swiper-slide {
+  height: auto;
+}
+
+.anime-slider-wrapper .swiper-button-prev,
+.anime-slider-wrapper .swiper-button-next {
+  width: 44px;
+  height: 44px;
+
+  top: 42%;
+
+  border-radius: 50%;
+
+  background: rgba(10, 10, 10, 0.92);
+
+  border: 1px solid rgba(255, 255, 255, 0.15);
+
+  color: white;
+
+  transition: 0.2s ease;
+}
+
+.anime-slider-wrapper .swiper-button-prev:hover,
+.anime-slider-wrapper .swiper-button-next:hover {
+  background: var(--orange);
+  color: black;
+}
+
+.anime-slider-wrapper .swiper-button-prev::after,
+.anime-slider-wrapper .swiper-button-next::after {
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.anime-card {
+  display: block;
+  min-width: 0;
+}
+
+.anime-card-image-wrap {
+  position: relative;
+
+  aspect-ratio: 2 / 3;
+
+  overflow: hidden;
+
+  border-radius: 8px;
+
+  background: #111;
+}
+
+.anime-card-image {
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.anime-card:hover .anime-card-image {
+  transform: scale(1.06);
+}
+
+.anime-card-gradient {
+  position: absolute;
+  inset: 0;
+
+  background:
+    linear-gradient(
+      0deg,
+      rgba(0, 0, 0, 0.85),
+      transparent 50%
+    );
+
+  opacity: 0;
+  transition: 0.25s ease;
+}
+
+.anime-card:hover .anime-card-gradient {
+  opacity: 1;
+}
+
+.anime-rating {
+  position: absolute;
+  left: 9px;
+  bottom: 9px;
+
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 5px 8px;
+
+  border-radius: 5px;
+
+  background: rgba(0, 0, 0, 0.75);
+
+  color: #ffd400;
+
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.anime-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+
+  width: 48px;
+  height: 48px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border-radius: 50%;
+
+  background: var(--orange);
+  color: black;
+
+  transform: translate(-50%, -50%) scale(0.7);
+  opacity: 0;
+
+  transition: 0.25s ease;
+}
+
+.anime-card:hover .anime-play {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.anime-card-content {
+  padding-top: 10px;
+}
+
+.anime-card-content h3 {
+  margin: 0;
+
+  overflow: hidden;
+
+  color: white;
+
+  font-size: 14px;
+  font-weight: 700;
+
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.anime-card-meta {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+
+  margin-top: 7px;
+
+  color: #888;
+
+  font-size: 11px;
+}
+
+.hd-badge {
+  color: #ddd;
+  font-weight: 800;
+}
+
+.empty-slider {
+  padding: 30px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: #888;
+}
+
+/* =========================
+   AI / CHAT
+========================= */
+
+.ai-section {
+  padding-top: 50px;
+  padding-bottom: 50px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 900px) {
+  .nav-inner {
+    width: calc(100% - 28px);
+    gap: 15px;
+  }
+
+  .nav-links {
+    position: fixed;
+    top: 78px;
+    left: 0;
+    right: 0;
+
+    display: none;
+    flex-direction: column;
+    align-items: flex-start;
+
+    padding: 25px;
+
+    background: rgba(5, 5, 5, 0.98);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  .search-link span,
+  .auth {
+    display: none;
+  }
+
+  .menu-btn {
+    display: block;
+  }
+
+  .hero {
+    min-height: 620px;
+    height: 75vh;
+  }
+
+  .hero-content h1 {
+    font-size: 45px;
+  }
+
+  .hero-content p {
+    max-width: 90%;
+  }
+
+  .home-content {
+    width: calc(100% - 28px);
+  }
+}
+
+@media (max-width: 600px) {
+  .topbar {
+    height: 68px;
+  }
+
+  .brand {
+    font-size: 23px;
+  }
+
+  .brand span {
+    font-size: 9px;
+  }
+
+  .brand::after {
+    margin-left: 71px;
+  }
+
+  .hero {
+    min-height: 600px;
+    height: 78vh;
+  }
+
+  .hero-content {
+    width: calc(100% - 28px);
+  }
+
+  .hero-content h1 {
+    font-size: 38px;
+    letter-spacing: -1px;
+  }
+
+  .hero-content p {
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .hero-meta {
+    gap: 10px;
+    font-size: 12px;
+  }
+
+  .hero-controls {
+    right: 15px;
+    bottom: 18px;
+  }
+
+  .anime-section {
+    padding: 25px 0;
+  }
+
+  .section-heading h2 {
+    font-size: 18px;
+  }
+
+  .anime-slider-wrapper .swiper-button-prev,
+  .anime-slider-wrapper .swiper-button-next {
+    width: 34px;
+    height: 34px;
+  }
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  border-radius: 9999px;
+  padding: 9px 13px;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgb(255 255 255 / 0.7);
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
+}
+
+.nav-item:hover {
+  background: rgb(255 255 255 / 0.1);
+  color: white;
+}
+/* =========================================================
+   COMMUNITY CHAT
+   ========================================================= */
+
+.floating-chat {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 9999;
+
+  width: 58px;
+  height: 58px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+
+  background: #f97316;
+  color: #000;
+
+  font-size: 22px;
+  cursor: pointer;
+
+  box-shadow:
+    0 10px 30px rgba(0, 0, 0, 0.45),
+    0 0 30px rgba(249, 115, 22, 0.18);
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.floating-chat:hover {
+  transform: scale(1.08);
+  background: #fb923c;
+
+  box-shadow:
+    0 14px 35px rgba(0, 0, 0, 0.5),
+    0 0 35px rgba(249, 115, 22, 0.28);
+}
+
+
+/* CHAT WINDOW */
+
+.chat-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 94px;
+  z-index: 9998;
+
+  width: 370px;
+  max-width: calc(100vw - 32px);
+  height: 540px;
+  max-height: calc(100vh - 130px);
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+
+  background: #0b0b0b;
+
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.65),
+    0 0 40px rgba(249, 115, 22, 0.08);
+}
+
+
+/* HEADER */
+
+.chat-head {
+  min-height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 16px 18px;
+
+  background: linear-gradient(
+    135deg,
+    #f97316,
+    #fb923c
+  );
+
+  color: #000;
+}
+
+.chat-head > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.chat-head b {
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.chat-head span {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.65;
+}
+
+.chat-head button {
+  width: 34px;
+  height: 34px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 50%;
+
+  background: rgba(0, 0, 0, 0.12);
+  color: #000;
+
+  cursor: pointer;
+
+  transition: background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.chat-head button:hover {
+  background: rgba(0, 0, 0, 0.2);
+  transform: scale(1.05);
+}
+
+
+/* MESSAGES */
+
+.chat-messages {
+  flex: 1;
+
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  padding: 16px;
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(249, 115, 22, 0.06),
+      transparent 35%
+    ),
+    #080808;
+}
+
+.chat-messages::-webkit-scrollbar {
+  width: 5px;
+}
+
+.chat-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-messages::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.15);
+}
+
+
+/* EMPTY */
+
+.empty-chat {
+  flex: 1;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  color: rgba(255, 255, 255, 0.45);
+
+  font-size: 13px;
+}
+
+
+/* MESSAGE */
+
+.chat-msg {
+  display: flex;
+  flex-direction: column;
+  align-self: flex-start;
+
+  max-width: 85%;
+
+  padding: 10px 12px;
+
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.06);
+
+  color: white;
+}
+
+.chat-msg b {
+  margin-bottom: 3px;
+
+  color: #fb923c;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.chat-msg span {
+  color: rgba(255, 255, 255, 0.88);
+
+  font-size: 13px;
+  line-height: 1.45;
+
+  overflow-wrap: anywhere;
+}
+
+.chat-msg small {
+  margin-top: 5px;
+
+  color: rgba(255, 255, 255, 0.35);
+
+  font-size: 9px;
+}
+
+
+/* NAME */
+
+.chat-name {
+  padding: 10px 12px 0;
+
+  background: #0b0b0b;
+}
+
+.chat-name input {
+  width: 100%;
+  height: 40px;
+
+  padding: 0 12px;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+
+  outline: none;
+
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+
+  font-size: 12px;
+
+  transition: border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.chat-name input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.chat-name input:focus {
+  border-color: rgba(249, 115, 22, 0.7);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+
+/* MESSAGE INPUT */
+
+.chat-input {
+  display: flex;
+  gap: 8px;
+
+  padding: 10px 12px 12px;
+
+  background: #0b0b0b;
+}
+
+.chat-input input {
+  min-width: 0;
+  flex: 1;
+
+  height: 44px;
+
+  padding: 0 13px;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 11px;
+
+  outline: none;
+
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+
+  font-size: 13px;
+
+  transition: border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.chat-input input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.chat-input input:focus {
+  border-color: rgba(249, 115, 22, 0.7);
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.chat-input button {
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 11px;
+
+  background: #f97316;
+  color: #000;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.chat-input button:hover:not(:disabled) {
+  transform: scale(1.04);
+  background: #fb923c;
+}
+
+.chat-input button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 640px) {
+  .floating-chat {
+    right: 16px;
+    bottom: 16px;
+
+    width: 54px;
+    height: 54px;
+  }
+
+  .chat-panel {
+    right: 16px;
+    bottom: 82px;
+
+    width: calc(100vw - 32px);
+    height: min(540px, calc(100vh - 110px));
+
+    border-radius: 18px;
+  }
+}
+/* =========================================================
+   LIVE COMMUNITY CHAT
+   ========================================================= */
+
+.anime-community-button {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 9998;
+
+  width: 58px;
+  height: 58px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 9999px;
+
+  background: #f97316;
+  color: #000;
+
+  font-size: 22px;
+  cursor: pointer;
+
+  box-shadow:
+    0 12px 35px rgba(0, 0, 0, 0.55),
+    0 0 30px rgba(249, 115, 22, 0.2);
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.anime-community-button:hover {
+  transform: scale(1.08);
+  background: #fb923c;
+
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.6),
+    0 0 40px rgba(249, 115, 22, 0.3);
+}
+
+
+/* =========================================================
+   COMMUNITY PANEL
+   ========================================================= */
+
+.anime-community-panel {
+  position: fixed;
+  right: 24px;
+  bottom: 94px;
+  z-index: 9997;
+
+  width: 370px;
+  max-width: calc(100vw - 32px);
+  height: 540px;
+  max-height: calc(100vh - 120px);
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+
+  background: #0b0b0b;
+
+  box-shadow:
+    0 25px 70px rgba(0, 0, 0, 0.7),
+    0 0 45px rgba(249, 115, 22, 0.08);
+
+  animation: communityChatIn 0.2s ease-out;
+}
+
+@keyframes communityChatIn {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+
+/* =========================================================
+   HEADER
+   ========================================================= */
+
+.anime-community-header {
+  min-height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 15px 18px;
+
+  background:
+    linear-gradient(
+      135deg,
+      #f97316,
+      #fb923c
+    );
+
+  color: #000;
+}
+
+.anime-community-header > div {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.anime-community-header h3 {
+  margin: 0;
+
+  font-size: 16px;
+  font-weight: 900;
+}
+
+.anime-community-header p {
+  margin: 0;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  opacity: 0.65;
+}
+
+.anime-community-header svg {
+  font-size: 19px;
+}
+
+
+/* =========================================================
+   MESSAGES AREA
+   ========================================================= */
+
+.anime-community-messages {
+  flex: 1;
+
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  padding: 16px;
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(249, 115, 22, 0.07),
+      transparent 35%
+    ),
+    #080808;
+}
+
+.anime-community-messages::-webkit-scrollbar {
+  width: 5px;
+}
+
+.anime-community-messages::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.anime-community-messages::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.16);
+}
+
+
+/* =========================================================
+   EMPTY STATE
+   ========================================================= */
+
+.anime-community-empty {
+  flex: 1;
+
+  display: flex;
+  flex-direction: column;
+
+  align-items: center;
+  justify-content: center;
+
+  text-align: center;
+
+  padding: 30px;
+
+  color: rgba(255, 255, 255, 0.45);
+}
+
+.anime-community-empty strong {
+  margin-bottom: 7px;
+
+  color: rgba(255, 255, 255, 0.85);
+
+  font-size: 14px;
+}
+
+.anime-community-empty span {
+  max-width: 250px;
+
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+
+/* =========================================================
+   MESSAGE
+   ========================================================= */
+
+.anime-community-message {
+  align-self: flex-start;
+
+  max-width: 85%;
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 10px 12px;
+
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.06);
+
+  color: white;
+}
+
+.anime-community-message strong {
+  margin-bottom: 3px;
+
+  color: #fb923c;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.anime-community-message span {
+  color: rgba(255, 255, 255, 0.88);
+
+  font-size: 13px;
+  line-height: 1.45;
+
+  overflow-wrap: anywhere;
+}
+
+.anime-community-message small {
+  margin-top: 5px;
+
+  color: rgba(255, 255, 255, 0.35);
+
+  font-size: 9px;
+}
+
+
+/* =========================================================
+   NAME INPUT
+   ========================================================= */
+
+.anime-community-name {
+  padding: 10px 12px 0;
+
+  background: #0b0b0b;
+}
+
+.anime-community-name input {
+  width: 100%;
+  height: 40px;
+
+  box-sizing: border-box;
+
+  padding: 0 12px;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+
+  outline: none;
+
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+
+  font-size: 12px;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.anime-community-name input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.anime-community-name input:focus {
+  border-color: rgba(249, 115, 22, 0.7);
+
+  background: rgba(255, 255, 255, 0.07);
+}
+
+
+/* =========================================================
+   MESSAGE INPUT
+   ========================================================= */
+
+.anime-community-input {
+  display: flex;
+  gap: 8px;
+
+  padding: 10px 12px 12px;
+
+  background: #0b0b0b;
+}
+
+.anime-community-input input {
+  min-width: 0;
+  flex: 1;
+
+  height: 44px;
+
+  box-sizing: border-box;
+
+  padding: 0 13px;
+
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 11px;
+
+  outline: none;
+
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+
+  font-size: 13px;
+
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease;
+}
+
+.anime-community-input input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.anime-community-input input:focus {
+  border-color: rgba(249, 115, 22, 0.7);
+
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.anime-community-input button {
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 11px;
+
+  background: #f97316;
+  color: #000;
+
+  cursor: pointer;
+
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease;
+}
+
+.anime-community-input button:hover:not(:disabled) {
+  transform: scale(1.04);
+  background: #fb923c;
+}
+
+.anime-community-input button:disabled {
+  cursor: not-allowed;
+  opacity: 0.4;
+}
+
+
+/* =========================================================
+   MOBILE
+   ========================================================= */
+
+@media (max-width: 640px) {
+  .anime-community-button {
+    right: 16px;
+    bottom: 16px;
+
+    width: 54px;
+    height: 54px;
+
+    font-size: 20px;
+  }
+
+  .anime-community-panel {
+    right: 16px;
+    bottom: 82px;
+
+    width: calc(100vw - 32px);
+    height: min(540px, calc(100vh - 110px));
+
+    border-radius: 18px;
+  }
+}
+/* =========================================================
+   ANIMEHUB AI CHAT
+========================================================= */
+
+.anime-ai-button {
+  position: fixed;
+  right: 94px;
+  bottom: 24px;
+  z-index: 10000;
+
+  width: 58px;
+  height: 58px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 9999px;
+
+  background: #f97316;
+  color: #000;
+
+  font-size: 21px;
+  cursor: pointer;
+
+  box-shadow:
+    0 10px 30px rgba(0,0,0,0.45),
+    0 0 30px rgba(249,115,22,0.18);
+
+  transition: transform .2s ease,
+              background .2s ease;
+}
+
+.anime-ai-button:hover {
+  transform: scale(1.08);
+  background: #fb923c;
+}
+
+
+/* AI WINDOW */
+
+.anime-ai-panel {
+  position: fixed;
+  right: 94px;
+  bottom: 94px;
+  z-index: 9999;
+
+  width: 370px;
+  height: 540px;
+  max-width: calc(100vw - 32px);
+  max-height: calc(100vh - 120px);
+
+  display: flex;
+  flex-direction: column;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 20px;
+
+  background: #0b0b0b;
+
+  box-shadow:
+    0 25px 70px rgba(0,0,0,0.7),
+    0 0 45px rgba(249,115,22,0.08);
+}
+
+
+/* HEADER */
+
+.anime-ai-header {
+  min-height: 72px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  padding: 16px 18px;
+
+  background: linear-gradient(
+    135deg,
+    #f97316,
+    #fb923c
+  );
+
+  color: #000;
+}
+
+.anime-ai-header h3 {
+  margin: 0;
+
+  font-size: 17px;
+  font-weight: 900;
+}
+
+.anime-ai-header p {
+  margin: 4px 0 0;
+
+  font-size: 11px;
+  font-weight: 600;
+
+  opacity: .7;
+}
+
+
+/* MESSAGES */
+
+.anime-ai-messages {
+  flex: 1;
+
+  overflow-y: auto;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+
+  padding: 16px;
+
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(249,115,22,.07),
+      transparent 35%
+    ),
+    #080808;
+}
+
+.anime-ai-messages::-webkit-scrollbar {
+  width: 5px;
+}
+
+.anime-ai-messages::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  background: rgba(255,255,255,.15);
+}
+
+
+/* MESSAGE ROW */
+
+.anime-ai-row {
+  display: flex;
+  width: 100%;
+}
+
+.anime-ai-row.user {
+  justify-content: flex-end;
+}
+
+.anime-ai-row.assistant {
+  justify-content: flex-start;
+}
+
+
+/* MESSAGE */
+
+.anime-ai-message {
+  max-width: 84%;
+
+  padding: 10px 13px;
+
+  border-radius: 14px;
+
+  font-size: 13px;
+  line-height: 1.5;
+
+  overflow-wrap: anywhere;
+}
+
+.anime-ai-row.assistant .anime-ai-message {
+  background: rgba(255,255,255,.07);
+
+  border: 1px solid rgba(255,255,255,.07);
+
+  color: rgba(255,255,255,.9);
+}
+
+.anime-ai-row.user .anime-ai-message {
+  background: #f97316;
+
+  color: #000;
+
+  font-weight: 600;
+}
+
+.anime-ai-message.thinking {
+  color: rgba(255,255,255,.45);
+}
+
+
+/* INPUT */
+
+.anime-ai-input-area {
+  display: flex;
+  gap: 8px;
+
+  padding: 10px 12px 12px;
+
+  background: #0b0b0b;
+
+  border-top: 1px solid rgba(255,255,255,.08);
+}
+
+.anime-ai-input-area input {
+  min-width: 0;
+  flex: 1;
+
+  height: 44px;
+
+  padding: 0 13px;
+
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 11px;
+
+  outline: none;
+
+  background: rgba(255,255,255,.05);
+
+  color: white;
+
+  font-size: 13px;
+}
+
+.anime-ai-input-area input::placeholder {
+  color: rgba(255,255,255,.35);
+}
+
+.anime-ai-input-area input:focus {
+  border-color: rgba(249,115,22,.7);
+}
+
+.anime-ai-input-area button {
+  width: 44px;
+  height: 44px;
+
+  flex-shrink: 0;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  border: 0;
+  border-radius: 11px;
+
+  background: #f97316;
+  color: #000;
+
+  cursor: pointer;
+}
+
+.anime-ai-input-area button:hover:not(:disabled) {
+  background: #fb923c;
+  transform: scale(1.04);
+}
+
+.anime-ai-input-area button:disabled {
+  opacity: .4;
+  cursor: not-allowed;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 640px) {
+  .anime-ai-button {
+    right: 84px;
+    bottom: 16px;
+
+    width: 54px;
+    height: 54px;
+  }
+
+  .anime-ai-panel {
+    right: 16px;
+    bottom: 82px;
+
+    width: calc(100vw - 32px);
+    height: min(540px, calc(100vh - 110px));
+
+    border-radius: 18px;
+  }
+}
+/* ==========================================
+   COMMUNITY CHAT - TYPING INDICATOR
+========================================== */
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+
+  padding: 4px 12px 10px;
+
+  color: rgba(255, 255, 255, 0.45);
+
+  font-size: 11px;
+}
+
+.typing-indicator span {
+  width: 5px;
+  height: 5px;
+
+  border-radius: 50%;
+
+  background: #f97316;
+
+  animation: chatTyping 1.2s
+    infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.typing-indicator em {
+  margin-left: 3px;
+
+  font-style: normal;
+}
+
+@keyframes chatTyping {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 12px 10px;
+  color: rgba(255, 255, 255, 0.45);
+  font-size: 11px;
+}
+
+.typing-indicator span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #f97316;
+  animation: chatTyping 1.2s infinite ease-in-out;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.typing-indicator em {
+  margin-left: 3px;
+  font-style: normal;
+}
+
+@keyframes chatTyping {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.35;
+  }
+
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+.anime-card {
+  width: 100%;
+}
+
+.poster-wrap {
+  position: relative;
+  aspect-ratio: 2 / 3;
+  overflow: hidden;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.poster-wrap img {
+  object-fit: cover;
+}
+
+.poster-shade {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    to top,
+    rgba(0, 0, 0, 0.8),
+    transparent 55%
+  );
+}
+
+.anime-card h3 {
+  margin-top: 0.75rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 700;
+}
+
+.anime-card p {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.45);
+}
