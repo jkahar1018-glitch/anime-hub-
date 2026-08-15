@@ -1,7 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 
+export const runtime = "nodejs";
+
 const GEMINI_URL =
   "https://generativelanguage.googleapis.com/v1beta/interactions";
+
+const GEMINI_MODEL = "gemini-3.6-flash";
 
 type HistoryMessage = {
   role?: string;
@@ -10,17 +14,27 @@ type HistoryMessage = {
 
 export async function POST(request: NextRequest) {
   try {
+    // --------------------------------------------------
+    // API KEY
+    // --------------------------------------------------
+
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
+      console.error("GEMINI_API_KEY is missing.");
+
       return NextResponse.json(
         {
           error:
-            "GEMINI_API_KEY is missing in .env.local",
+            "Gemini API key is missing. Add GEMINI_API_KEY to .env.local and Vercel Environment Variables.",
         },
         { status: 500 }
       );
     }
+
+    // --------------------------------------------------
+    // READ REQUEST
+    // --------------------------------------------------
 
     const body = await request.json();
 
@@ -43,25 +57,32 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    /*
-     * Build conversation text.
-     *
-     * We keep the history simple so the API
-     * receives a clean prompt every time.
-     */
+    // --------------------------------------------------
+    // CONVERSATION HISTORY
+    // --------------------------------------------------
 
     const previousConversation = history
       .slice(-10)
       .map((item) => {
         const role =
-          item.role === "assistant" ||
-          item.role === "model"
+          item?.role === "assistant" ||
+          item?.role === "model"
             ? "AnimeHub AI"
             : "User";
 
-        return `${role}: ${item.content || ""}`;
+        const content =
+          typeof item?.content === "string"
+            ? item.content.trim()
+            : "";
+
+        return `${role}: ${content}`;
       })
+      .filter(Boolean)
       .join("\n");
+
+    // --------------------------------------------------
+    // ANIMEHUB AI PROMPT
+    // --------------------------------------------------
 
     const prompt = `
 You are AnimeHub AI, the official AI assistant
@@ -75,18 +96,36 @@ Your job is to help users with:
 - Anime stories
 - Anime watch orders
 - Anime suggestions
-- General questions about anime
+- Anime movies
+- Anime series
+- Anime episodes
+- Anime comparisons
+- General anime questions
 
-Be friendly, helpful and concise.
+Rules:
+
+1. Be friendly and helpful.
+2. Keep normal answers reasonably concise.
+3. You can answer in Hindi, Hinglish, or English.
+4. Reply in the same language style the user uses.
+5. If the user asks about anime, give useful and clear information.
+6. Do not pretend to have watched an anime personally.
+7. Do not make up information when you are unsure.
 
 Conversation history:
-${previousConversation}
+
+${previousConversation || "No previous conversation."}
 
 User:
+
 ${message}
 
 AnimeHub AI:
 `.trim();
+
+    // --------------------------------------------------
+    // GEMINI INTERACTIONS API
+    // --------------------------------------------------
 
     const response = await fetch(GEMINI_URL, {
       method: "POST",
@@ -94,28 +133,52 @@ AnimeHub AI:
       headers: {
         "Content-Type": "application/json",
         "x-goog-api-key": apiKey,
+        "Api-Revision": "2026-05-20",
       },
 
       body: JSON.stringify({
-        model: "gemini-3.6-flash",
-
+        model: GEMINI_MODEL,
         input: prompt,
       }),
     });
 
-    const data = await response.json();
+    // --------------------------------------------------
+    // READ RESPONSE SAFELY
+    // --------------------------------------------------
+
+    const rawText = await response.text();
+
+    let data: any = null;
+
+    try {
+      data = rawText ? JSON.parse(rawText) : null;
+    } catch {
+      console.error(
+        "Gemini returned invalid JSON:",
+        rawText
+      );
+    }
+
+    // --------------------------------------------------
+    // GEMINI ERROR
+    // --------------------------------------------------
 
     if (!response.ok) {
       console.error(
-        "Gemini Interactions API Error:",
-        data
+        "Gemini API Error:",
+        response.status,
+        data ?? rawText
       );
+
+      const apiError =
+        data?.error?.message ||
+        data?.message ||
+        rawText ||
+        "Gemini AI request failed.";
 
       return NextResponse.json(
         {
-          error:
-            data?.error?.message ||
-            "Gemini AI request failed.",
+          error: apiError,
         },
         {
           status: response.status,
@@ -123,16 +186,41 @@ AnimeHub AI:
       );
     }
 
-    /*
-     * Interactions API response
-     */
+    // --------------------------------------------------
+    // GET AI RESPONSE
+    // --------------------------------------------------
 
     let reply = "";
 
+    // New Interactions API convenience response
     if (typeof data?.output_text === "string") {
       reply = data.output_text;
     }
 
+    // Interactions API steps
+    if (!reply && Array.isArray(data?.steps)) {
+      for (const step of data.steps) {
+        if (
+          Array.isArray(step?.content)
+        ) {
+          for (const part of step.content) {
+            if (
+              typeof part?.text === "string"
+            ) {
+              reply += part.text;
+            }
+          }
+        }
+
+        if (
+          typeof step?.text === "string"
+        ) {
+          reply += step.text;
+        }
+      }
+    }
+
+    // Older/alternate output format
     if (!reply && Array.isArray(data?.outputs)) {
       for (const output of data.outputs) {
         if (
@@ -155,58 +243,88 @@ AnimeHub AI:
       }
     }
 
-    if (!reply && Array.isArray(data?.steps)) {
-      for (const step of data.steps) {
-        if (
-          typeof step?.text === "string"
-        ) {
-          reply += step.text;
-        }
-
-        if (
-          Array.isArray(step?.content)
-        ) {
-          for (const part of step.content) {
-            if (
-              typeof part?.text === "string"
-            ) {
-              reply += part.text;
-            }
-          }
-        }
-      }
-    }
-
     reply = reply.trim();
+
+    // --------------------------------------------------
+    // EMPTY RESPONSE
+    // --------------------------------------------------
 
     if (!reply) {
       console.error(
-        "Gemini returned no text:",
+        "Gemini returned no text.",
         data
       );
 
       return NextResponse.json(
         {
           error:
-            "Gemini returned an empty response.",
+            "Gemini returned an empty response. Please try again.",
         },
         { status: 502 }
       );
     }
 
+    // --------------------------------------------------
+    // SUCCESS
+    // --------------------------------------------------
+
     return NextResponse.json({
       reply,
     });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error(
-      "AnimeHub AI Server Error:",
-      error
+      "================================="
     );
+
+    console.error(
+      "ANIMEHUB AI SERVER ERROR"
+    );
+
+    console.error(
+      "================================="
+    );
+
+    console.error(error);
+
+    let errorMessage =
+      "AI service temporarily failed. Please try again.";
+
+    if (error instanceof Error) {
+      console.error(
+        "Error message:",
+        error.message
+      );
+
+      if (
+        error.message.includes("401") ||
+        error.message.includes("403") ||
+        error.message
+          .toLowerCase()
+          .includes("api key")
+      ) {
+        errorMessage =
+          "Gemini API key is invalid or does not have permission.";
+      } else if (
+        error.message.includes("429") ||
+        error.message
+          .toLowerCase()
+          .includes("quota")
+      ) {
+        errorMessage =
+          "Gemini API quota/limit reached. Please try again later.";
+      }
+    }
 
     return NextResponse.json(
       {
-        error:
-          "AI service temporarily failed. Please try again.",
+        error: errorMessage,
+
+        ...(process.env.NODE_ENV !== "production" &&
+        error instanceof Error
+          ? {
+              debug: error.message,
+            }
+          : {}),
       },
       { status: 500 }
     );
