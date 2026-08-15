@@ -17,6 +17,7 @@ export default async function AnimeDetailsPage({ params }: Props) {
       <main className="flex min-h-screen items-center justify-center bg-black px-6 text-white">
         <div className="text-center">
           <h1 className="text-4xl font-black">Anime Not Found</h1>
+
           <Link
             href="/"
             className="mt-6 inline-block rounded-xl bg-orange-500 px-6 py-3 font-bold text-black"
@@ -38,7 +39,9 @@ export default async function AnimeDetailsPage({ params }: Props) {
             AnimeHub
           </p>
 
-          <h1 className="text-4xl font-black">Anime Not Found</h1>
+          <h1 className="text-4xl font-black">
+            Anime Not Found
+          </h1>
 
           <p className="mt-4 text-white/60">
             We couldn&apos;t find this anime right now.
@@ -81,17 +84,31 @@ export default async function AnimeDetailsPage({ params }: Props) {
     "No description available for this anime.";
 
   const score =
-    typeof anime.averageScore === "number" && anime.averageScore > 0
+    typeof anime.averageScore === "number" &&
+    anime.averageScore > 0
       ? (anime.averageScore / 10).toFixed(1)
       : "N/A";
 
   const episodeCount =
-    typeof anime.episodes === "number" && anime.episodes > 0
+    typeof anime.episodes === "number" &&
+    anime.episodes > 0
       ? anime.episodes
       : 12;
 
+  /*
+   * Trailer
+   *
+   * AniList normally returns:
+   * anime.trailer?.id
+   *
+   * We safely check it so TypeScript/build
+   * does not fail if trailer is unavailable.
+   */
   const trailerId =
-    anime.trailer?.site?.toLowerCase() === "youtube"
+    anime.trailer &&
+    typeof anime.trailer === "object" &&
+    "id" in anime.trailer &&
+    typeof anime.trailer.id === "string"
       ? anime.trailer.id
       : null;
 
@@ -116,6 +133,7 @@ export default async function AnimeDetailsPage({ params }: Props) {
         )}
 
         <div className="absolute inset-0 bg-gradient-to-t from-[#050505] via-black/55 to-black/20" />
+
         <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/30 to-transparent" />
       </section>
 
@@ -124,7 +142,7 @@ export default async function AnimeDetailsPage({ params }: Props) {
       ====================================================== */}
 
       <section className="relative z-10 mx-auto -mt-32 max-w-7xl px-4 pb-20 sm:px-6 lg:px-8">
-        {/* Back button */}
+        {/* BACK BUTTON */}
 
         <Link
           href="/"
@@ -217,19 +235,21 @@ export default async function AnimeDetailsPage({ params }: Props) {
 
             {/* GENRES */}
 
-            {/* GENRES */}
-              {Array.isArray(anime.genres) && anime.genres.length > 0 && (
+            {Array.isArray(anime.genres) &&
+              anime.genres.length > 0 && (
                 <div className="mt-7 flex flex-wrap gap-2">
-                {anime.genres.map((genre: string) => (
-                <span
-                 key={genre}
-                 className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/70"
-               >
-                  {genre}
-                 </span>
-                 ))}
+                  {anime.genres.map(
+                    (genre: string) => (
+                      <span
+                        key={genre}
+                        className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/70"
+                      >
+                        {genre}
+                      </span>
+                    )
+                  )}
                 </div>
-             )}
+              )}
 
             {/* DESCRIPTION */}
 
@@ -282,37 +302,53 @@ export default async function AnimeDetailsPage({ params }: Props) {
 
             <div className="space-y-4 text-white/65">
               <p>
-                <strong className="text-white">Status:</strong>{" "}
+                <strong className="text-white">
+                  Status:
+                </strong>{" "}
                 {anime.status ?? "Unknown"}
               </p>
 
               <p>
-                <strong className="text-white">Episodes:</strong>{" "}
+                <strong className="text-white">
+                  Episodes:
+                </strong>{" "}
                 {anime.episodes ?? "Unknown"}
               </p>
 
               <p>
-                <strong className="text-white">Duration:</strong>{" "}
-                {anime.duration ? `${anime.duration} min` : "Unknown"}
+                <strong className="text-white">
+                  Duration:
+                </strong>{" "}
+                {anime.duration
+                  ? `${anime.duration} min`
+                  : "Unknown"}
               </p>
 
               <p>
-                <strong className="text-white">Season:</strong>{" "}
+                <strong className="text-white">
+                  Season:
+                </strong>{" "}
                 {anime.season ?? "Unknown"}
               </p>
 
               <p>
-                <strong className="text-white">Year:</strong>{" "}
+                <strong className="text-white">
+                  Year:
+                </strong>{" "}
                 {anime.seasonYear ?? "Unknown"}
               </p>
 
               <p>
-                <strong className="text-white">Score:</strong>{" "}
+                <strong className="text-white">
+                  Score:
+                </strong>{" "}
                 ⭐ {score}
               </p>
 
               <p>
-                <strong className="text-white">Popularity:</strong>{" "}
+                <strong className="text-white">
+                  Popularity:
+                </strong>{" "}
                 {anime.popularity
                   ? anime.popularity.toLocaleString()
                   : "Unknown"}
@@ -326,9 +362,10 @@ export default async function AnimeDetailsPage({ params }: Props) {
             </h2>
 
             <p className="mb-5 text-sm leading-6 text-white/50">
-              AniList does not provide reliable episode-level dub
-              availability, so actual Hindi/English audio availability
-              should be verified from your licensed streaming source.
+              AniList does not provide reliable
+              episode-level dub availability, so actual
+              Hindi/English audio availability should be
+              verified from your licensed streaming source.
             </p>
 
             <div className="flex flex-wrap gap-3">
@@ -359,8 +396,9 @@ export default async function AnimeDetailsPage({ params }: Props) {
               </h2>
 
               <p className="mt-2 max-w-2xl leading-7 text-white/60">
-                Episode 1 can be opened directly. Your authentication and
-                episode-access rules can be applied to later episodes.
+                Episode 1 can be opened directly. Your
+                authentication and episode-access rules can
+                be applied to later episodes.
               </p>
             </div>
 
@@ -397,7 +435,9 @@ export default async function AnimeDetailsPage({ params }: Props) {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: episodeCount }).map((_, index) => {
+            {Array.from({
+              length: episodeCount,
+            }).map((_, index) => {
               const episode = index + 1;
 
               return (
