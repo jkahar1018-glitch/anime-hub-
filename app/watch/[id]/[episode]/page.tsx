@@ -93,36 +93,34 @@ export default function WatchPage({ params }: Props) {
   ===================================================== */
 
   useEffect(() => {
-    if (!resolvedParams) return;
+  if (!resolvedParams) return;
 
-    // IMPORTANT:
-    // Store the ID before entering the async function.
-    // This fixes the TypeScript "possibly null" error.
-    const animeId = Number(resolvedParams.id);
+  const animeId = Number(resolvedParams.id);
 
-    if (!Number.isFinite(animeId) || animeId <= 0) {
+  if (!Number.isFinite(animeId) || animeId <= 0) {
+    setAnime(null);
+    setLoading(false);
+    return;
+  }
+
+  async function loadAnime() {
+    try {
+      setLoading(true);
+
+      const result = await getAnimeById(animeId);
+
+      setAnime(result ?? null);
+    } catch (error) {
+      console.error("Failed to load anime:", error);
       setAnime(null);
+    } finally {
       setLoading(false);
-      return;
     }
+  }
 
-    async function loadAnime() {
-      try {
-        setLoading(true);
+  loadAnime();
+}, [resolvedParams]);
 
-        const result = await getAnimeById(animeId);
-
-        setAnime(result ?? null);
-      } catch (error) {
-        console.error("Failed to load anime:", error);
-        setAnime(null);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadAnime();
-  }, [resolvedParams]);
 
   /* =====================================================
      EPISODE DATA
