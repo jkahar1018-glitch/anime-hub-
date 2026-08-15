@@ -12,6 +12,132 @@ type HistoryMessage = {
   content?: string;
 };
 
+type GeminiContentPart = {
+  text?: unknown;
+};
+
+type GeminiStep = {
+  text?: unknown;
+  content?: unknown;
+};
+
+type GeminiOutput = {
+  text?: unknown;
+  content?: unknown;
+};
+
+type GeminiResponse = {
+  error?: {
+    message?: unknown;
+  };
+  message?: unknown;
+  output_text?: unknown;
+  steps?: unknown;
+  outputs?: unknown;
+};
+
+function getTextFromContent(content: unknown): string {
+  if (!Array.isArray(content)) {
+    return "";
+  }
+
+  return content
+    .map((part: unknown) => {
+      if (
+        typeof part === "object" &&
+        part !== null &&
+        "text" in part
+      ) {
+        const item = part as GeminiContentPart;
+
+        return typeof item.text === "string"
+          ? item.text
+          : "";
+      }
+
+      return "";
+    })
+    .join("");
+}
+
+function getGeminiReply(data: GeminiResponse): string {
+  let reply = "";
+
+  // New Interactions API response
+  if (typeof data.output_text === "string") {
+    reply = data.output_text;
+  }
+
+  // Interactions API steps
+  if (!reply && Array.isArray(data.steps)) {
+    for (const rawStep of data.steps) {
+      if (
+        typeof rawStep !== "object" ||
+        rawStep === null
+      ) {
+        continue;
+      }
+
+      const step = rawStep as GeminiStep;
+
+      if (typeof step.text === "string") {
+        reply += step.text;
+      }
+
+      reply += getTextFromContent(step.content);
+    }
+  }
+
+  // Alternate output format
+  if (!reply && Array.isArray(data.outputs)) {
+    for (const rawOutput of data.outputs) {
+      if (
+        typeof rawOutput !== "object" ||
+        rawOutput === null
+      ) {
+        continue;
+      }
+
+      const output = rawOutput as GeminiOutput;
+
+      if (typeof output.text === "string") {
+        reply += output.text;
+      }
+
+      reply += getTextFromContent(output.content);
+    }
+  }
+
+  return reply.trim();
+}
+
+function getApiError(
+  data: GeminiResponse | null,
+  rawText: string
+): string {
+  if (
+    data &&
+    typeof data.error === "object" &&
+    data.error !== null &&
+    typeof data.error.message === "string"
+  ) {
+    return data.error.message;
+  }
+
+  if (
+    data &&
+    typeof data.message === "string"
+  ) {
+    return data.message;
+  }
+
+  if (rawText.trim()) {
+    return rawText.trim();
+  }
+
+  return "Gemini AI request failed.";
+}
+
 export async function POST(request: NextRequest) {
   try {
     // --------------------------------------------------
@@ -21,7 +147,9 @@ export async function POST(request: NextRequest) {
     const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      console.error("GEMINI_API_KEY is missing.");
+      console.error(
+        "GEMINI_API_KEY is missing."
+      );
 
       return NextResponse.json(
         {
@@ -36,16 +164,37 @@ export async function POST(request: NextRequest) {
     // READ REQUEST
     // --------------------------------------------------
 
-    const body = await request.json();
+    const body: unknown = await request.json();
+
+    if (
+      typeof body !== "object" ||
+      body === null
+    ) {
+      return NextResponse.json(
+        {
+          error: "Invalid request body.",
+        },
+        { status: 400 }
+      );
+    }
+
+    const requestBody = body as {
+      message?: unknown;
+      history?: unknown;
+    };
 
     const message =
-      typeof body?.message === "string"
-        ? body.message.trim()
+      typeof requestBody.message === "string"
+        ? requestBody.message.trim()
         : "";
 
     const history: HistoryMessage[] =
-      Array.isArray(body?.history)
-        ? body.history
+      Array.isArray(requestBody.history)
+        ? requestBody.history.filter(
+            (item): item is HistoryMessage =>
+              typeof item === "object" &&
+              item !== null
+          )
         : [];
 
     if (!message) {
@@ -65,19 +214,21 @@ export async function POST(request: NextRequest) {
       .slice(-10)
       .map((item) => {
         const role =
-          item?.role === "assistant" ||
-          item?.role === "model"
+          item.role === "assistant" ||
+          item.role === "model"
             ? "AnimeHub AI"
             : "User";
 
         const content =
-          typeof item?.content === "string"
+          typeof item.content === "string"
             ? item.content.trim()
             : "";
 
         return `${role}: ${content}`;
       })
-      .filter(Boolean)
+      .filter(
+        (line) => line.trim().length > 0
+      )
       .join("\n");
 
     // --------------------------------------------------
@@ -127,20 +278,23 @@ AnimeHub AI:
     // GEMINI INTERACTIONS API
     // --------------------------------------------------
 
-    const response = await fetch(GEMINI_URL, {
-      method: "POST",
+    const response = await fetch(
+      GEMINI_URL,
+      {
+        method: "POST",
 
-      headers: {
-        "Content-Type": "application/json",
-        "x-goog-api-key": apiKey,
-        "Api-Revision": "2026-05-20",
-      },
+        headers: {
+          "Content-Type": "application/json",
+          "x-goog-api-key": apiKey,
+          "Api-Revision": "2026-05-20",
+        },
 
-      body: JSON.stringify({
-        model: GEMINI_MODEL,
-        input: prompt,
-      }),
-    });
+        body: JSON.stringify({
+          model: GEMINI_MODEL,
+          input: prompt,
+        }),
+      }
+    );
 
     // --------------------------------------------------
     // READ RESPONSE SAFELY
@@ -148,15 +302,25 @@ AnimeHub AI:
 
     const rawText = await response.text();
 
-    let data: any = null;
+    let data: GeminiResponse | null = null;
 
-    try {
-      data = rawText ? JSON.parse(rawText) : null;
-    } catch {
-      console.error(
-        "Gemini returned invalid JSON:",
-        rawText
-      );
+    if (rawText.trim()) {
+      try {
+        const parsed: unknown =
+          JSON.parse(rawText);
+
+        if (
+          typeof parsed === "object" &&
+          parsed !== null
+        ) {
+          data = parsed as GeminiResponse;
+        }
+      } catch {
+        console.error(
+          "Gemini returned invalid JSON:",
+          rawText
+        );
+      }
     }
 
     // --------------------------------------------------
@@ -170,11 +334,10 @@ AnimeHub AI:
         data ?? rawText
       );
 
-      const apiError =
-        data?.error?.message ||
-        data?.message ||
-        rawText ||
-        "Gemini AI request failed.";
+      const apiError = getApiError(
+        data,
+        rawText
+      );
 
       return NextResponse.json(
         {
@@ -190,60 +353,21 @@ AnimeHub AI:
     // GET AI RESPONSE
     // --------------------------------------------------
 
-    let reply = "";
+    if (!data) {
+      console.error(
+        "Gemini returned an empty response."
+      );
 
-    // New Interactions API convenience response
-    if (typeof data?.output_text === "string") {
-      reply = data.output_text;
+      return NextResponse.json(
+        {
+          error:
+            "Gemini returned an empty response. Please try again.",
+        },
+        { status: 502 }
+      );
     }
 
-    // Interactions API steps
-    if (!reply && Array.isArray(data?.steps)) {
-      for (const step of data.steps) {
-        if (
-          Array.isArray(step?.content)
-        ) {
-          for (const part of step.content) {
-            if (
-              typeof part?.text === "string"
-            ) {
-              reply += part.text;
-            }
-          }
-        }
-
-        if (
-          typeof step?.text === "string"
-        ) {
-          reply += step.text;
-        }
-      }
-    }
-
-    // Older/alternate output format
-    if (!reply && Array.isArray(data?.outputs)) {
-      for (const output of data.outputs) {
-        if (
-          typeof output?.text === "string"
-        ) {
-          reply += output.text;
-        }
-
-        if (
-          Array.isArray(output?.content)
-        ) {
-          for (const part of output.content) {
-            if (
-              typeof part?.text === "string"
-            ) {
-              reply += part.text;
-            }
-          }
-        }
-      }
-    }
-
-    reply = reply.trim();
+    const reply = getGeminiReply(data);
 
     // --------------------------------------------------
     // EMPTY RESPONSE
@@ -251,7 +375,7 @@ AnimeHub AI:
 
     if (!reply) {
       console.error(
-        "Gemini returned no text.",
+        "Gemini returned no text:",
         data
       );
 
@@ -295,23 +419,28 @@ AnimeHub AI:
         error.message
       );
 
+      const lowerMessage =
+        error.message.toLowerCase();
+
       if (
         error.message.includes("401") ||
         error.message.includes("403") ||
-        error.message
-          .toLowerCase()
-          .includes("api key")
+        lowerMessage.includes("api key")
       ) {
         errorMessage =
           "Gemini API key is invalid or does not have permission.";
       } else if (
         error.message.includes("429") ||
-        error.message
-          .toLowerCase()
-          .includes("quota")
+        lowerMessage.includes("quota")
       ) {
         errorMessage =
           "Gemini API quota/limit reached. Please try again later.";
+      } else if (
+        error.message.includes("404") ||
+        lowerMessage.includes("not found")
+      ) {
+        errorMessage =
+          "Gemini model or API endpoint was not found. Check the Gemini configuration.";
       }
     }
 
@@ -319,7 +448,8 @@ AnimeHub AI:
       {
         error: errorMessage,
 
-        ...(process.env.NODE_ENV !== "production" &&
+        ...(process.env.NODE_ENV !==
+          "production" &&
         error instanceof Error
           ? {
               debug: error.message,

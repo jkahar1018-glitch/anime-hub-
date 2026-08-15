@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+
 import {
   FaHeart,
   FaHistory,
@@ -29,15 +30,18 @@ type WatchHistoryItem = {
 
 type FavoriteItem = {
   id: number;
-  title: string;
-  image: string;
+  title?: string;
+  image?: string;
   score?: number | null;
 };
 
 function isFavoriteItem(
   item: unknown
 ): item is FavoriteItem {
-  if (typeof item !== "object" || item === null) {
+  if (
+    typeof item !== "object" ||
+    item === null
+  ) {
     return false;
   }
 
@@ -45,17 +49,25 @@ function isFavoriteItem(
     return false;
   }
 
-  return typeof item.id === "number";
+  return (
+    typeof item.id === "number"
+  );
 }
 
 function isWatchHistoryItem(
   item: unknown
 ): item is WatchHistoryItem {
-  if (typeof item !== "object" || item === null) {
+  if (
+    typeof item !== "object" ||
+    item === null
+  ) {
     return false;
   }
 
-  if (!("id" in item) || !("episode" in item)) {
+  if (
+    !("id" in item) ||
+    !("episode" in item)
+  ) {
     return false;
   }
 
@@ -66,25 +78,43 @@ function isWatchHistoryItem(
 }
 
 export default function ProfilePage() {
-  const { isLoaded, isSignedIn, user } = useUser();
+  const {
+    isLoaded,
+    isSignedIn,
+    user,
+  } = useUser();
 
-  const [history, setHistory] = useState<
-    WatchHistoryItem[]
-  >([]);
+  const [
+    history,
+    setHistory,
+  ] = useState<WatchHistoryItem[]>(
+    []
+  );
 
-  const [favoritesCount, setFavoritesCount] =
-    useState(0);
+  const [
+    favoritesCount,
+    setFavoritesCount,
+  ] = useState(0);
 
-  const [dataLoaded, setDataLoaded] =
-    useState(false);
+  const [
+    dataLoaded,
+    setDataLoaded,
+  ] = useState(false);
 
   useEffect(() => {
-    if (typeof window === "undefined") {
+    if (
+      typeof window ===
+      "undefined"
+    ) {
       return;
     }
 
     const loadProfileData = () => {
       try {
+        /* =========================
+           WATCH HISTORY
+        ========================= */
+
         const savedHistory =
           window.localStorage.getItem(
             "watchHistory"
@@ -92,11 +122,17 @@ export default function ProfilePage() {
 
         if (savedHistory) {
           const parsed: unknown =
-            JSON.parse(savedHistory);
+            JSON.parse(
+              savedHistory
+            );
 
-          if (Array.isArray(parsed)) {
+          if (
+            Array.isArray(parsed)
+          ) {
             setHistory(
-              parsed.filter(isWatchHistoryItem)
+              parsed.filter(
+                isWatchHistoryItem
+              )
             );
           } else {
             setHistory([]);
@@ -105,16 +141,28 @@ export default function ProfilePage() {
           setHistory([]);
         }
 
+        /* =========================
+           FAVORITES
+        ========================= */
+
         const savedFavorites =
-          window.localStorage.getItem("favorites");
+          window.localStorage.getItem(
+            "favorites"
+          );
 
         if (savedFavorites) {
           const parsed: unknown =
-            JSON.parse(savedFavorites);
+            JSON.parse(
+              savedFavorites
+            );
 
-          if (Array.isArray(parsed)) {
+          if (
+            Array.isArray(parsed)
+          ) {
             setFavoritesCount(
-              parsed.filter(isFavoriteItem).length
+              parsed.filter(
+                isFavoriteItem
+              ).length
             );
           } else {
             setFavoritesCount(0);
@@ -124,7 +172,7 @@ export default function ProfilePage() {
         }
       } catch (error) {
         console.error(
-          "Failed to load profile data:",
+          "Profile localStorage error:",
           error
         );
 
@@ -170,6 +218,10 @@ export default function ProfilePage() {
     };
   }, []);
 
+  /* =========================
+     CLERK LOADING
+  ========================= */
+
   if (!isLoaded) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-black text-white">
@@ -183,6 +235,10 @@ export default function ProfilePage() {
       </main>
     );
   }
+
+  /* =========================
+     NOT SIGNED IN
+  ========================= */
 
   if (!isSignedIn) {
     return (
@@ -202,8 +258,9 @@ export default function ProfilePage() {
             </h1>
 
             <p className="mx-auto mt-4 max-w-md leading-7 text-white/50">
-              Sign in to access your profile,
-              favorites, watch history and continue
+              Sign in to access your
+              profile, favorites, watch
+              history and continue
               watching.
             </p>
 
@@ -232,6 +289,7 @@ export default function ProfilePage() {
               className="mt-6 inline-flex items-center gap-2 text-sm font-bold text-white/40 transition hover:text-white"
             >
               <FaHome size={12} />
+
               Back to Home
             </Link>
           </div>
@@ -240,6 +298,10 @@ export default function ProfilePage() {
     );
   }
 
+  /* =========================
+     USER DATA
+  ========================= */
+
   const displayName =
     user?.fullName ||
     user?.firstName ||
@@ -247,13 +309,21 @@ export default function ProfilePage() {
     "Anime Fan";
 
   const email =
-    user?.primaryEmailAddress?.emailAddress || "";
+    user?.primaryEmailAddress
+      ?.emailAddress || "";
 
-  const imageUrl = user?.imageUrl || "";
+  const imageUrl =
+    user?.imageUrl || "";
+
+  /* =========================
+     PROFILE
+  ========================= */
 
   return (
     <main className="min-h-screen bg-black px-4 pb-20 pt-24 text-white sm:px-6">
       <div className="mx-auto max-w-6xl">
+
+        {/* TOP BAR */}
 
         <div className="mb-6 flex items-center justify-between">
           <Link
@@ -261,6 +331,7 @@ export default function ProfilePage() {
             className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-bold text-white transition hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-orange-400"
           >
             <FaHome size={13} />
+
             Home
           </Link>
 
@@ -269,9 +340,14 @@ export default function ProfilePage() {
           </p>
         </div>
 
+        {/* PROFILE CARD */}
+
         <section className="overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-orange-500/10 via-white/[0.03] to-purple-500/10">
           <div className="p-6 sm:p-10">
             <div className="flex flex-col gap-7 sm:flex-row sm:items-center">
+
+              {/* AVATAR */}
+
               <div className="shrink-0">
                 {imageUrl ? (
                   <img
@@ -287,6 +363,8 @@ export default function ProfilePage() {
                   </div>
                 )}
               </div>
+
+              {/* USER INFO */}
 
               <div className="min-w-0 flex-1">
                 <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-orange-400">
@@ -304,12 +382,15 @@ export default function ProfilePage() {
                 )}
               </div>
 
+              {/* SIGN OUT */}
+
               <SignOutButton>
                 <button
                   type="button"
                   className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-5 py-3 text-sm font-bold text-red-400 transition hover:border-red-500/40 hover:bg-red-500/20"
                 >
                   <FaSignOutAlt size={13} />
+
                   Sign Out
                 </button>
               </SignOutButton>
@@ -317,7 +398,10 @@ export default function ProfilePage() {
           </div>
         </section>
 
+        {/* STATS */}
+
         <section className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
+
           <Link
             href="/favorites"
             className="group rounded-2xl border border-white/10 bg-white/[0.03] p-6 transition duration-300 hover:-translate-y-1 hover:border-orange-500/30 hover:bg-orange-500/[0.04]"
@@ -365,6 +449,8 @@ export default function ProfilePage() {
           </Link>
         </section>
 
+        {/* CONTINUE WATCHING */}
+
         <section className="mt-10">
           <div className="mb-5 flex items-end justify-between">
             <div>
@@ -387,11 +473,14 @@ export default function ProfilePage() {
             )}
           </div>
 
+          {/* LOADING */}
+
           {!dataLoaded ? (
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center">
               <div className="mx-auto h-7 w-7 animate-spin rounded-full border-2 border-white/10 border-t-purple-500" />
             </div>
           ) : history.length === 0 ? (
+            /* EMPTY */
             <div className="rounded-2xl border border-white/10 bg-white/[0.03] p-10 text-center">
               <FaHistory
                 className="mx-auto text-white/20"
@@ -407,53 +496,85 @@ export default function ProfilePage() {
                 className="mt-5 inline-flex items-center gap-2 rounded-xl bg-purple-600 px-5 py-3 text-sm font-bold transition hover:bg-purple-500"
               >
                 <FaPlay size={11} />
+
                 Browse Anime
               </Link>
             </div>
           ) : (
+            /* HISTORY GRID */
             <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5">
               {history
                 .slice(0, 5)
-                .map((item, index) => (
-                  <Link
-                    key={`${item.id}-${item.episode}-${index}`}
-                    href={`/watch/${item.id}/${item.episode}`}
-                    className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition duration-300 hover:-translate-y-1 hover:border-purple-500/40"
-                  >
-                    <div className="relative aspect-[2/3] overflow-hidden bg-white/5">
-                      {item.image ? (
-                        <img
-                          src={item.image}
-                          alt={
-                            item.title || "Anime"
-                          }
-                          loading="lazy"
-                          className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
-                        />
-                      ) : (
-                        <div className="flex h-full items-center justify-center text-sm text-white/20">
-                          No Image
+                .map(
+                  (
+                    item,
+                    index
+                  ) => (
+                    <Link
+                      key={`${item.id}-${item.episode}-${index}`}
+                      href={`/watch/${item.id}/${item.episode}`}
+                      className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition duration-300 hover:-translate-y-1 hover:border-purple-500/40"
+                    >
+                      <div className="relative aspect-[2/3] overflow-hidden bg-white/5">
+                        {item.image ? (
+                          <img
+                            src={item.image}
+                            alt={
+                              item.title ||
+                              "Anime"
+                            }
+                            loading="lazy"
+                            className="h-full w-full object-cover transition duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-sm text-white/20">
+                            No Image
+                          </div>
+                        )}
+
+                        <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/60 to-transparent p-3 pt-14">
+                          <span className="rounded-md bg-purple-600 px-2 py-1 text-xs font-bold">
+                            EP{" "}
+                            {
+                              item.episode
+                            }
+                          </span>
                         </div>
-                      )}
-
-                      <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black via-black/60 to-transparent p-3 pt-14">
-                        <span className="rounded-md bg-purple-600 px-2 py-1 text-xs font-bold">
-                          EP {item.episode}
-                        </span>
                       </div>
-                    </div>
 
-                    <div className="p-3">
-                      <p className="truncate text-sm font-bold">
-                        {item.title || "Anime"}
-                      </p>
+                      <div className="p-3">
+                        <p className="truncate text-sm font-bold">
+                          {item.title ||
+                            "Anime"}
+                        </p>
 
-                      <p className="mt-1 text-xs text-purple-400">
-                        Continue watching
-                      </p>
-                    </div>
-                  </Link>
-                ))}
+                        <p className="mt-1 text-xs text-purple-400">
+                          Continue watching
+                        </p>
+
+                        {typeof item.progress ===
+                          "number" &&
+                        item.progress >
+                          0 ? (
+                          <div className="mt-2 h-1 overflow-hidden rounded-full bg-white/10">
+                            <div
+                              className="h-full bg-purple-500"
+                              style={{
+                                width: `${Math.min(
+                                  Math.max(
+                                    item.progress,
+                                    0
+                                  ),
+                                  100
+                                )}%`,
+                              }}
+                            />
+                          </div>
+                        ) : null}
+                      </div>
+                    </Link>
+                  )
+                )}
             </div>
           )}
         </section>

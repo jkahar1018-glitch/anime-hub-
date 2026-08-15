@@ -217,18 +217,19 @@ export default async function AnimeDetailsPage({ params }: Props) {
 
             {/* GENRES */}
 
-            {anime.genres?.length > 0 && (
-              <div className="mt-7 flex flex-wrap gap-2">
+            {/* GENRES */}
+              {Array.isArray(anime.genres) && anime.genres.length > 0 && (
+                <div className="mt-7 flex flex-wrap gap-2">
                 {anime.genres.map((genre: string) => (
-                  <span
-                    key={genre}
-                    className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/80 transition hover:border-orange-400/40 hover:text-white"
-                  >
-                    {genre}
-                  </span>
-                ))}
-              </div>
-            )}
+                <span
+                 key={genre}
+                 className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-semibold text-white/70"
+               >
+                  {genre}
+                 </span>
+                 ))}
+                </div>
+             )}
 
             {/* DESCRIPTION */}
 

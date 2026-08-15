@@ -3,7 +3,12 @@
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import { FaChevronLeft, FaPlay, FaTrash, FaClock } from "react-icons/fa";
+import {
+  FaChevronLeft,
+  FaPlay,
+  FaTrash,
+  FaClock,
+} from "react-icons/fa";
 
 type WatchlistItem = {
   id: number;
@@ -53,27 +58,54 @@ export default function WatchlistPage() {
   };
 
   useEffect(() => {
-    loadWatchlist();
+    const timer = window.setTimeout(() => {
+      loadWatchlist();
+    }, 0);
 
     const handleUpdate = () => {
       loadWatchlist();
     };
 
-    window.addEventListener("watchlistUpdated", handleUpdate);
+    window.addEventListener(
+      "watchlistUpdated",
+      handleUpdate
+    );
+
+    window.addEventListener(
+      "storage",
+      handleUpdate
+    );
 
     return () => {
-      window.removeEventListener("watchlistUpdated", handleUpdate);
+      window.clearTimeout(timer);
+
+      window.removeEventListener(
+        "watchlistUpdated",
+        handleUpdate
+      );
+
+      window.removeEventListener(
+        "storage",
+        handleUpdate
+      );
     };
   }, []);
 
   const removeItem = (id: number) => {
-    const updated = watchlist.filter((item) => item.id !== id);
+    const updated = watchlist.filter(
+      (item) => item.id !== id
+    );
 
     setWatchlist(updated);
 
-    localStorage.setItem("watchlist", JSON.stringify(updated));
+    localStorage.setItem(
+      "watchlist",
+      JSON.stringify(updated)
+    );
 
-    window.dispatchEvent(new Event("watchlistUpdated"));
+    window.dispatchEvent(
+      new Event("watchlistUpdated")
+    );
   };
 
   const clearWatchlist = () => {
@@ -81,7 +113,9 @@ export default function WatchlistPage() {
 
     localStorage.removeItem("watchlist");
 
-    window.dispatchEvent(new Event("watchlistUpdated"));
+    window.dispatchEvent(
+      new Event("watchlistUpdated")
+    );
   };
 
   if (!loaded) {
@@ -89,6 +123,7 @@ export default function WatchlistPage() {
       <main className="flex min-h-screen items-center justify-center bg-black text-white">
         <div className="text-center">
           <div className="mx-auto h-10 w-10 animate-spin rounded-full border-2 border-white/10 border-t-purple-500" />
+
           <p className="mt-4 text-sm text-white/40">
             Loading watchlist...
           </p>
@@ -113,6 +148,7 @@ export default function WatchlistPage() {
             <h1 className="text-xl font-black sm:text-2xl">
               Watchlist
             </h1>
+
             <p className="mt-1 text-xs text-white/40">
               Your saved anime
             </p>
@@ -125,7 +161,10 @@ export default function WatchlistPage() {
               className="inline-flex items-center gap-2 rounded-xl border border-red-500/20 bg-red-500/10 px-4 py-2.5 text-sm font-bold text-red-400 transition hover:bg-red-500/20"
             >
               <FaTrash size={12} />
-              <span className="hidden sm:inline">Clear</span>
+
+              <span className="hidden sm:inline">
+                Clear
+              </span>
             </button>
           ) : (
             <div className="w-[80px]" />
@@ -226,7 +265,9 @@ export default function WatchlistPage() {
 
                       <button
                         type="button"
-                        onClick={() => removeItem(item.id)}
+                        onClick={() =>
+                          removeItem(item.id)
+                        }
                         className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-white/5 text-white/40 transition hover:border-red-500/20 hover:bg-red-500/10 hover:text-red-400"
                         aria-label={`Remove ${item.title}`}
                       >

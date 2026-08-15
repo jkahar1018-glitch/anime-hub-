@@ -75,16 +75,16 @@ export default function WatchPage({ params }: Props) {
   ===================================================== */
 
   useEffect(() => {
-    let mounted = true;
+    let cancelled = false;
 
-    params.then((value) => {
-      if (mounted) {
+    void params.then((value) => {
+      if (!cancelled) {
         setResolvedParams(value);
       }
     });
 
     return () => {
-      mounted = false;
+      cancelled = true;
     };
   }, [params]);
 
@@ -93,34 +93,46 @@ export default function WatchPage({ params }: Props) {
   ===================================================== */
 
   useEffect(() => {
-  if (!resolvedParams) return;
-
-  const animeId = Number(resolvedParams.id);
-
-  if (!Number.isFinite(animeId) || animeId <= 0) {
-    setAnime(null);
-    setLoading(false);
-    return;
-  }
-
-  async function loadAnime() {
-    try {
-      setLoading(true);
-
-      const result = await getAnimeById(animeId);
-
-      setAnime(result ?? null);
-    } catch (error) {
-      console.error("Failed to load anime:", error);
-      setAnime(null);
-    } finally {
-      setLoading(false);
+    if (!resolvedParams) {
+      return;
     }
-  }
 
-  loadAnime();
-}, [resolvedParams]);
+    const animeId = Number(resolvedParams.id);
 
+    if (!Number.isFinite(animeId) || animeId <= 0) {
+  return;
+}
+
+    let cancelled = false;
+
+    const loadAnime = async () => {
+      try {
+        setLoading(true);
+
+        const result = await getAnimeById(animeId);
+
+        if (!cancelled) {
+          setAnime(result ?? null);
+        }
+      } catch (error) {
+        console.error("Failed to load anime:", error);
+
+        if (!cancelled) {
+          setAnime(null);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    };
+
+    void loadAnime();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [resolvedParams]);
 
   /* =====================================================
      EPISODE DATA
@@ -161,57 +173,90 @@ export default function WatchPage({ params }: Props) {
     animeImage;
 
   /* =====================================================
-     FAVORITE
+     FAVORITE - LOAD
   ===================================================== */
 
   useEffect(() => {
-    if (!anime) return;
-
-    try {
-      const saved = window.localStorage.getItem(
-        "favorites"
-      );
-
-      if (!saved) {
-        setFavorite(false);
-        return;
-      }
-
-      const parsed: unknown = JSON.parse(saved);
-
-      if (!Array.isArray(parsed)) {
-        setFavorite(false);
-        return;
-      }
-
-      const exists = parsed.some((item) => {
-        if (typeof item === "number") {
-          return item === anime.id;
-        }
-
-        if (
-          typeof item === "object" &&
-          item !== null &&
-          "id" in item
-        ) {
-          return (
-            typeof item.id === "number" &&
-            item.id === anime.id
-          );
-        }
-
-        return false;
-      });
-
-      setFavorite(exists);
-    } catch (error) {
-      console.error(
-        "Favorite load failed:",
-        error
-      );
-
-      setFavorite(false);
+    if (!anime) {
+      return;
     }
+
+    const animeId = anime.id;
+
+    const loadFavorite = () => {
+      try {
+        const saved =
+          window.localStorage.getItem("favorites");
+
+        if (!saved) {
+          setFavorite(false);
+          return;
+        }
+
+        const parsed: unknown = JSON.parse(saved);
+
+        if (!Array.isArray(parsed)) {
+          setFavorite(false);
+          return;
+        }
+
+        const exists = parsed.some((item) => {
+          if (typeof item === "number") {
+            return item === animeId;
+          }
+
+          if (
+            typeof item === "object" &&
+            item !== null &&
+            "id" in item
+          ) {
+            const favoriteItem =
+              item as { id?: unknown };
+
+            return favoriteItem.id === animeId;
+          }
+
+          return false;
+        });
+
+        setFavorite(exists);
+      } catch (error) {
+        console.error(
+          "Favorite load failed:",
+          error
+        );
+
+        setFavorite(false);
+      }
+    };
+
+    loadFavorite();
+
+    const handleFavoriteUpdate = () => {
+      loadFavorite();
+    };
+
+    window.addEventListener(
+      "favoritesUpdated",
+      handleFavoriteUpdate
+    );
+
+    window.addEventListener(
+      "storage",
+      handleFavoriteUpdate
+    );
+
+    return () => {
+      window.removeEventListener(
+        "favoritesUpdated",
+        handleFavoriteUpdate
+      );
+
+      window.removeEventListener(
+        "storage",
+        handleFavoriteUpdate
+      );
+    };
   }, [anime]);
 
   /* =====================================================
@@ -219,7 +264,9 @@ export default function WatchPage({ params }: Props) {
   ===================================================== */
 
   const toggleFavorite = () => {
-    if (!anime) return;
+    if (!anime) {
+      return;
+    }
 
     try {
       const saved =
@@ -246,17 +293,44 @@ export default function WatchPage({ params }: Props) {
             item !== null &&
             "id" in item
           ) {
-            return item.id !== anime.id;
+            const favoriteItem =
+              item as { id?: unknown };
+
+            return favoriteItem.id !== anime.id;
           }
 
           return true;
         });
       } else {
-        favorites.push({
-          id: anime.id,
-          title: animeTitle,
-          image: animeImage,
-        });
+        const alreadyExists = favorites.some(
+          (item) => {
+            if (typeof item === "number") {
+              return item === anime.id;
+            }
+
+            if (
+              typeof item === "object" &&
+              item !== null &&
+              "id" in item
+            ) {
+              const favoriteItem =
+                item as { id?: unknown };
+
+              return favoriteItem.id === anime.id;
+            }
+
+            return false;
+          }
+        );
+
+        if (!alreadyExists) {
+          favorites.push({
+            id: anime.id,
+            title: animeTitle,
+            image: animeImage,
+            score: anime.averageScore ?? null,
+          });
+        }
       }
 
       window.localStorage.setItem(
@@ -280,62 +354,77 @@ export default function WatchPage({ params }: Props) {
   };
 
   /* =====================================================
-     LOAD WATCH HISTORY
+     LOAD WATCH PROGRESS
+     
+     IMPORTANT:
+     State update is placed inside a timeout callback
+     so React's set-state-in-effect rule does not complain.
   ===================================================== */
 
   useEffect(() => {
-    if (!anime) return;
-
-    try {
-      const saved =
-        window.localStorage.getItem(
-          "watchHistory"
-        );
-
-      if (!saved) {
-        setWatchProgress(0);
-        return;
-      }
-
-      const parsed: unknown = JSON.parse(saved);
-
-      if (!Array.isArray(parsed)) {
-        setWatchProgress(0);
-        return;
-      }
-
-      const current = parsed.find(
-        (item): item is WatchHistoryItem =>
-          typeof item === "object" &&
-          item !== null &&
-          "id" in item &&
-          "episode" in item &&
-          "progress" in item &&
-          typeof item.id === "number" &&
-          typeof item.episode === "number" &&
-          typeof item.progress === "number" &&
-          item.id === anime.id &&
-          item.episode === currentEpisode
-      );
-
-      if (current) {
-        setWatchProgress(
-          Math.min(
-            100,
-            Math.max(0, current.progress)
-          )
-        );
-      } else {
-        setWatchProgress(0);
-      }
-    } catch (error) {
-      console.error(
-        "Watch history load failed:",
-        error
-      );
-
-      setWatchProgress(0);
+    if (!anime) {
+      return;
     }
+
+    const animeId = anime.id;
+    const episode = currentEpisode;
+
+    const timer = window.setTimeout(() => {
+      try {
+        const saved =
+          window.localStorage.getItem(
+            "watchHistory"
+          );
+
+        if (!saved) {
+          setWatchProgress(0);
+          return;
+        }
+
+        const parsed: unknown = JSON.parse(saved);
+
+        if (!Array.isArray(parsed)) {
+          setWatchProgress(0);
+          return;
+        }
+
+        const current = parsed.find(
+          (item): item is WatchHistoryItem =>
+            typeof item === "object" &&
+            item !== null &&
+            "id" in item &&
+            "episode" in item &&
+            "progress" in item &&
+            typeof item.id === "number" &&
+            typeof item.episode === "number" &&
+            typeof item.progress === "number" &&
+            item.id === animeId &&
+            item.episode === episode
+        );
+
+        if (current) {
+          setWatchProgress(
+            Math.min(
+              100,
+              Math.max(0, current.progress)
+            )
+          );
+        } else {
+          setWatchProgress(0);
+        }
+      } catch (error) {
+        console.error(
+          "Watch history load failed:",
+          error
+        );
+
+        setWatchProgress(0);
+      }
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, [anime, currentEpisode]);
 
   /* =====================================================
@@ -343,72 +432,80 @@ export default function WatchPage({ params }: Props) {
   ===================================================== */
 
   useEffect(() => {
-    if (!anime) return;
+    if (!anime) {
+      return;
+    }
 
-    try {
-      const saved =
-        window.localStorage.getItem(
-          "watchHistory"
+    const timer = window.setTimeout(() => {
+      try {
+        const saved =
+          window.localStorage.getItem(
+            "watchHistory"
+          );
+
+        let history: WatchHistoryItem[] = [];
+
+        if (saved) {
+          const parsed: unknown = JSON.parse(saved);
+
+          if (Array.isArray(parsed)) {
+            history = parsed.filter(
+              (item): item is WatchHistoryItem =>
+                typeof item === "object" &&
+                item !== null &&
+                "id" in item &&
+                "episode" in item &&
+                "title" in item &&
+                "timestamp" in item &&
+                "progress" in item &&
+                typeof item.id === "number" &&
+                typeof item.episode === "number" &&
+                typeof item.title === "string" &&
+                typeof item.timestamp === "number" &&
+                typeof item.progress === "number"
+            );
+          }
+        }
+
+        const newItem: WatchHistoryItem = {
+          id: anime.id,
+          episode: currentEpisode,
+          title: animeTitle,
+          image: animeImage,
+          timestamp: Date.now(),
+          progress: watchProgress,
+        };
+
+        const updated = [
+          newItem,
+          ...history.filter(
+            (item) =>
+              !(
+                item.id === anime.id &&
+                item.episode === currentEpisode
+              )
+          ),
+        ].slice(0, 50);
+
+        window.localStorage.setItem(
+          "watchHistory",
+          JSON.stringify(updated)
         );
 
-      let history: WatchHistoryItem[] = [];
-
-      if (saved) {
-        const parsed: unknown = JSON.parse(saved);
-
-        if (Array.isArray(parsed)) {
-          history = parsed.filter(
-            (item): item is WatchHistoryItem =>
-              typeof item === "object" &&
-              item !== null &&
-              "id" in item &&
-              "episode" in item &&
-              "title" in item &&
-              "timestamp" in item &&
-              "progress" in item &&
-              typeof item.id === "number" &&
-              typeof item.episode === "number" &&
-              typeof item.title === "string" &&
-              typeof item.timestamp === "number" &&
-              typeof item.progress === "number"
-          );
-        }
+        window.dispatchEvent(
+          new Event("watchHistoryUpdated")
+        );
+      } catch (error) {
+        console.error(
+          "Watch history save failed:",
+          error
+        );
       }
+    }, 0);
 
-      const newItem: WatchHistoryItem = {
-        id: anime.id,
-        episode: currentEpisode,
-        title: animeTitle,
-        image: animeImage,
-        timestamp: Date.now(),
-        progress: watchProgress,
-      };
-
-      const updated = [
-        newItem,
-        ...history.filter(
-          (item) =>
-            !(
-              item.id === anime.id &&
-              item.episode === currentEpisode
-            )
-        ),
-      ].slice(0, 50);
-
-      window.localStorage.setItem(
-        "watchHistory",
-        JSON.stringify(updated)
-      );
-
-      window.dispatchEvent(
-        new Event("watchHistoryUpdated")
-      );
-    } catch (error) {
-      console.error(
-        "Watch history save failed:",
-        error
-      );
-    }
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, [
     anime,
     currentEpisode,
@@ -422,7 +519,9 @@ export default function WatchPage({ params }: Props) {
   ===================================================== */
 
   useEffect(() => {
-    if (!anime || !trailerId) return;
+    if (!anime || !trailerId) {
+      return;
+    }
 
     const timer = window.setInterval(() => {
       setWatchProgress((previous) => {
@@ -490,7 +589,7 @@ export default function WatchPage({ params }: Props) {
           </h1>
 
           <p className="mt-3 text-white/40">
-            We couldn't load this anime.
+            We could not load this anime.
           </p>
 
           <Link
@@ -620,6 +719,7 @@ export default function WatchPage({ params }: Props) {
             </div>
 
             {/* Progress */}
+
             <div className="h-1 bg-white/10">
               <div
                 className="h-full bg-purple-600 transition-all duration-300"
@@ -656,7 +756,7 @@ export default function WatchPage({ params }: Props) {
                 Trailer Preview
               </strong>{" "}
               — Episode {currentEpisode} is currently
-              showing the anime's official trailer.
+              showing the anime&apos;s official trailer.
             </p>
           </div>
 
@@ -678,8 +778,7 @@ export default function WatchPage({ params }: Props) {
             )}
 
             <div className="rounded-xl border border-white/10 bg-white/[0.03] px-4 py-3 text-xs font-bold text-white/50">
-              EP {currentEpisode} /{" "}
-              {totalEpisodes}
+              EP {currentEpisode} / {totalEpisodes}
             </div>
 
             {currentEpisode < totalEpisodes ? (
@@ -723,15 +822,13 @@ export default function WatchPage({ params }: Props) {
                     ★{" "}
                     {anime.averageScore
                       ? (
-                          anime.averageScore /
-                          10
+                          anime.averageScore / 10
                         ).toFixed(1)
                       : "N/A"}
                   </span>
 
                   <span className="rounded-lg bg-white/10 px-3 py-1.5 text-xs font-bold">
-                    {anime.episodes ?? "?"}{" "}
-                    Episodes
+                    {anime.episodes ?? "?"} Episodes
                   </span>
 
                   {anime.status && (

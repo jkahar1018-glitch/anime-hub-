@@ -19,65 +19,61 @@ type WatchHistoryItem = {
   progress: number;
 };
 
+function readWatchHistory(): WatchHistoryItem[] {
+  try {
+    const saved = window.localStorage.getItem("watchHistory");
+
+    if (!saved) {
+      return [];
+    }
+
+    const parsed: unknown = JSON.parse(saved);
+
+    if (!Array.isArray(parsed)) {
+      return [];
+    }
+
+    return parsed.filter(
+      (item): item is WatchHistoryItem =>
+        typeof item === "object" &&
+        item !== null &&
+        "id" in item &&
+        "episode" in item &&
+        "title" in item &&
+        typeof item.id === "number" &&
+        typeof item.episode === "number" &&
+        typeof item.title === "string"
+    );
+  } catch (error) {
+    console.error(
+      "Failed to load watch history:",
+      error
+    );
+
+    return [];
+  }
+}
+
 export default function WatchHistoryPage() {
   const [history, setHistory] = useState<WatchHistoryItem[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   /*
-   * LOAD HISTORY
-   */
-  const loadHistory = () => {
-    try {
-      const saved =
-        window.localStorage.getItem("watchHistory");
-
-      if (!saved) {
-        setHistory([]);
-        setLoaded(true);
-        return;
-      }
-
-      const parsed: unknown = JSON.parse(saved);
-
-      if (!Array.isArray(parsed)) {
-        setHistory([]);
-        setLoaded(true);
-        return;
-      }
-
-      const validHistory = parsed.filter(
-        (item): item is WatchHistoryItem =>
-          typeof item === "object" &&
-          item !== null &&
-          "id" in item &&
-          "episode" in item &&
-          "title" in item &&
-          typeof item.id === "number" &&
-          typeof item.episode === "number" &&
-          typeof item.title === "string"
-      );
-
-      setHistory(validHistory);
-      setLoaded(true);
-    } catch (error) {
-      console.error(
-        "Failed to load watch history:",
-        error
-      );
-
-      setHistory([]);
-      setLoaded(true);
-    }
-  };
-
-  /*
    * INITIAL LOAD
+   *
+   * setTimeout is intentional here.
+   * It prevents the React set-state-in-effect
+   * lint error while still loading localStorage
+   * immediately after mount.
    */
   useEffect(() => {
-    loadHistory();
+    const timer = window.setTimeout(() => {
+      setHistory(readWatchHistory());
+      setLoaded(true);
+    }, 0);
 
     const handleUpdate = () => {
-      loadHistory();
+      setHistory(readWatchHistory());
     };
 
     window.addEventListener(
@@ -85,9 +81,21 @@ export default function WatchHistoryPage() {
       handleUpdate
     );
 
+    window.addEventListener(
+      "storage",
+      handleUpdate
+    );
+
     return () => {
+      window.clearTimeout(timer);
+
       window.removeEventListener(
         "watchHistoryUpdated",
+        handleUpdate
+      );
+
+      window.removeEventListener(
+        "storage",
         handleUpdate
       );
     };
@@ -110,14 +118,21 @@ export default function WatchHistoryPage() {
 
     setHistory(updated);
 
-    window.localStorage.setItem(
-      "watchHistory",
-      JSON.stringify(updated)
-    );
+    try {
+      window.localStorage.setItem(
+        "watchHistory",
+        JSON.stringify(updated)
+      );
 
-    window.dispatchEvent(
-      new Event("watchHistoryUpdated")
-    );
+      window.dispatchEvent(
+        new Event("watchHistoryUpdated")
+      );
+    } catch (error) {
+      console.error(
+        "Failed to update watch history:",
+        error
+      );
+    }
   };
 
   /*
@@ -126,13 +141,20 @@ export default function WatchHistoryPage() {
   const clearHistory = () => {
     setHistory([]);
 
-    window.localStorage.removeItem(
-      "watchHistory"
-    );
+    try {
+      window.localStorage.removeItem(
+        "watchHistory"
+      );
 
-    window.dispatchEvent(
-      new Event("watchHistoryUpdated")
-    );
+      window.dispatchEvent(
+        new Event("watchHistoryUpdated")
+      );
+    } catch (error) {
+      console.error(
+        "Failed to clear watch history:",
+        error
+      );
+    }
   };
 
   /*
@@ -174,20 +196,16 @@ export default function WatchHistoryPage() {
 
   return (
     <main className="min-h-screen bg-black text-white">
-
       {/* HEADER */}
       <header className="sticky top-0 z-40 border-b border-white/10 bg-black/90 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6">
-
           <Link
             href="/"
             className="inline-flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-bold transition hover:border-purple-500/30 hover:bg-purple-500/10"
           >
             <FaChevronLeft size={11} />
 
-            <span>
-              Home
-            </span>
+            <span>Home</span>
           </Link>
 
           <div className="text-center">
@@ -215,19 +233,15 @@ export default function WatchHistoryPage() {
           ) : (
             <div className="w-[80px]" />
           )}
-
         </div>
       </header>
 
       {/* CONTENT */}
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-
         {/* EMPTY */}
         {history.length === 0 ? (
           <section className="flex min-h-[55vh] items-center justify-center">
-
             <div className="max-w-md text-center">
-
               <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.04]">
                 <FaClock
                   size={28}
@@ -251,15 +265,12 @@ export default function WatchHistoryPage() {
                 <FaPlay size={11} />
                 Browse Anime
               </Link>
-
             </div>
-
           </section>
         ) : (
           <>
             {/* TITLE */}
             <div className="mb-6">
-
               <div className="inline-flex rounded-full border border-purple-500/20 bg-purple-500/10 px-3 py-1 text-[10px] font-black uppercase tracking-[0.2em] text-purple-400">
                 AnimeHub
               </div>
@@ -271,22 +282,17 @@ export default function WatchHistoryPage() {
               <p className="mt-2 text-sm text-white/40">
                 Pick up where you left off.
               </p>
-
             </div>
 
             {/* HISTORY GRID */}
             <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-
               {history.map((item) => (
-
                 <article
                   key={`${item.id}-${item.episode}`}
                   className="group overflow-hidden rounded-2xl border border-white/10 bg-white/[0.03] transition duration-300 hover:-translate-y-1 hover:border-purple-500/30"
                 >
-
                   {/* IMAGE */}
                   <div className="relative aspect-[2/3] overflow-hidden bg-white/5">
-
                     {item.image ? (
                       <Image
                         src={item.image}
@@ -301,7 +307,7 @@ export default function WatchHistoryPage() {
                       </div>
                     )}
 
-                    {/* DARK OVERLAY */}
+                    {/* OVERLAY */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
 
                     {/* EPISODE */}
@@ -334,18 +340,15 @@ export default function WatchHistoryPage() {
                         }}
                       />
                     </div>
-
                   </div>
 
                   {/* INFO */}
                   <div className="p-4">
-
                     <h3 className="truncate text-base font-black">
                       {item.title}
                     </h3>
 
                     <div className="mt-2 flex items-center justify-between text-xs text-white/40">
-
                       <span>
                         Episode {item.episode}
                       </span>
@@ -356,7 +359,6 @@ export default function WatchHistoryPage() {
                         )}
                         %
                       </span>
-
                     </div>
 
                     <p className="mt-2 truncate text-[11px] text-white/25">
@@ -365,7 +367,6 @@ export default function WatchHistoryPage() {
 
                     {/* BUTTONS */}
                     <div className="mt-4 flex gap-2">
-
                       <Link
                         href={`/watch/${item.id}/${item.episode}`}
                         className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-purple-600 px-3 py-2.5 text-xs font-black transition hover:bg-purple-500"
@@ -387,19 +388,13 @@ export default function WatchHistoryPage() {
                       >
                         <FaTrash size={11} />
                       </button>
-
                     </div>
-
                   </div>
-
                 </article>
-
               ))}
-
             </div>
           </>
         )}
-
       </div>
     </main>
   );

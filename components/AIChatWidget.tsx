@@ -21,6 +21,9 @@ const suggestions = [
   "Best anime for beginners",
 ];
 
+const welcomeMessage =
+  "Hi! I'm AnimeHub AI 🤖\nTell me what kind of anime you're looking for!";
+
 export default function AIChatWidget() {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
@@ -30,17 +33,25 @@ export default function AIChatWidget() {
     {
       id: 1,
       role: "assistant",
-      content:
-        "Hi! I'm AnimeHub AI 🤖\nTell me what kind of anime you're looking for!",
+      content: welcomeMessage,
     },
   ]);
 
   const messagesRef = useRef<HTMLDivElement>(null);
+  const messageIdRef = useRef(2);
+
+  const getMessageId = () => {
+    const id = messageIdRef.current;
+    messageIdRef.current += 1;
+    return id;
+  };
 
   useEffect(() => {
     const container = messagesRef.current;
 
-    if (!container) return;
+    if (!container) {
+      return;
+    }
 
     container.scrollTop = container.scrollHeight;
   }, [messages, loading]);
@@ -48,10 +59,9 @@ export default function AIChatWidget() {
   const clearChat = () => {
     setMessages([
       {
-        id: Date.now(),
+        id: getMessageId(),
         role: "assistant",
-        content:
-          "Hi! I'm AnimeHub AI 🤖\nTell me what kind of anime you're looking for!",
+        content: welcomeMessage,
       },
     ]);
   };
@@ -59,18 +69,19 @@ export default function AIChatWidget() {
   const sendMessage = async (customMessage?: string) => {
     const message = (customMessage ?? input).trim();
 
-    if (!message || loading) return;
+    if (!message || loading) {
+      return;
+    }
 
     setInput("");
 
     const userMessage: Message = {
-      id: Date.now(),
+      id: getMessageId(),
       role: "user",
       content: message,
     };
 
     setMessages((prev) => [...prev, userMessage]);
-
     setLoading(true);
 
     try {
@@ -87,13 +98,15 @@ export default function AIChatWidget() {
       const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data?.error || "AI request failed");
+        throw new Error(
+          data?.error || "AI request failed"
+        );
       }
 
       setMessages((prev) => [
         ...prev,
         {
-          id: Date.now() + 1,
+          id: getMessageId(),
           role: "assistant",
           content:
             data?.reply ||
@@ -106,7 +119,7 @@ export default function AIChatWidget() {
       setMessages((prev) => [
         ...prev,
         {
-          id: Date.now() + 1,
+          id: getMessageId(),
           role: "assistant",
           content:
             "Sorry, something went wrong. Please try again.",
@@ -119,10 +132,6 @@ export default function AIChatWidget() {
 
   return (
     <>
-      {/* ===================================================== */}
-      {/* AI CHAT WINDOW                                        */}
-      {/* ===================================================== */}
-
       {open && (
         <div
           className="
@@ -146,6 +155,7 @@ export default function AIChatWidget() {
         >
           <div className="flex h-[min(680px,75vh)] flex-col">
             {/* HEADER */}
+
             <header className="shrink-0 bg-gradient-to-br from-orange-400 to-orange-500 px-5 py-5 text-black">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex min-w-0 items-center gap-3">
@@ -165,7 +175,6 @@ export default function AIChatWidget() {
                 </div>
 
                 <div className="flex shrink-0 items-center gap-1">
-                  {/* CLEAR */}
                   <button
                     type="button"
                     onClick={clearChat}
@@ -185,7 +194,6 @@ export default function AIChatWidget() {
                     <FaTrash size={13} />
                   </button>
 
-                  {/* CLOSE */}
                   <button
                     type="button"
                     onClick={() => setOpen(false)}
@@ -208,9 +216,7 @@ export default function AIChatWidget() {
               </div>
             </header>
 
-            {/* ================================================= */}
-            {/* MESSAGES                                         */}
-            {/* ================================================= */}
+            {/* MESSAGES */}
 
             <div
               ref={messagesRef}
@@ -254,7 +260,6 @@ export default function AIChatWidget() {
                   </div>
                 ))}
 
-                {/* LOADING */}
                 {loading && (
                   <div className="flex justify-start">
                     <div className="rounded-2xl rounded-bl-md border border-white/10 bg-white/[0.06] px-4 py-3">
@@ -269,9 +274,7 @@ export default function AIChatWidget() {
               </div>
             </div>
 
-            {/* ================================================= */}
-            {/* SUGGESTIONS                                      */}
-            {/* ================================================= */}
+            {/* SUGGESTIONS */}
 
             <div className="shrink-0 border-t border-white/10 bg-[#0d0d0d] px-4 py-3">
               <div className="mb-2 flex items-center gap-2 text-xs font-bold text-white/45">
@@ -311,15 +314,13 @@ export default function AIChatWidget() {
               </div>
             </div>
 
-            {/* ================================================= */}
-            {/* INPUT                                            */}
-            {/* ================================================= */}
+            {/* INPUT */}
 
             <div className="shrink-0 border-t border-white/10 bg-[#090909] p-3">
               <form
                 onSubmit={(event) => {
                   event.preventDefault();
-                  sendMessage();
+                  void sendMessage();
                 }}
                 className="flex items-center gap-2"
               >
@@ -381,9 +382,7 @@ export default function AIChatWidget() {
         </div>
       )}
 
-      {/* ===================================================== */}
-      {/* FLOATING AI BUTTON                                   */}
-      {/* ===================================================== */}
+      {/* FLOATING AI BUTTON */}
 
       <div
         className="
@@ -422,7 +421,6 @@ export default function AIChatWidget() {
           }
           title={open ? "Close AnimeHub AI" : "AnimeHub AI"}
         >
-          {/* OUTER GLOW */}
           {!open && (
             <span
               className="
@@ -437,14 +435,12 @@ export default function AIChatWidget() {
             />
           )}
 
-          {/* ICON */}
           {open ? (
             <FaTimes size={22} />
           ) : (
             <FaRobot size={25} />
           )}
 
-          {/* AI LABEL */}
           {!open && (
             <span
               className="

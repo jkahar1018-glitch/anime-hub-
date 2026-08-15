@@ -2,76 +2,59 @@ const API_URL = "https://graphql.anilist.co";
 
 type Variables = Record<string, unknown>;
 
-/* =========================================================
-   ANILIST FETCH
-========================================================= */
+export type Anime = {
+  id: number;
 
-async function fetchAnime(
-  query: string,
-  variables: Variables = {}
-) {
-  const controller = new AbortController();
+  title: {
+    romaji: string;
+    english?: string | null;
+    native?: string | null;
+  };
 
-  const timeout = setTimeout(() => {
-    controller.abort();
-  }, 12000);
+  averageScore?: number | null;
+  popularity?: number | null;
 
-  try {
-    const response = await fetch(API_URL, {
-      method: "POST",
+  episodes?: number | null;
+  duration?: number | null;
 
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-      },
+  season?: string | null;
+  seasonYear?: number | null;
 
-      body: JSON.stringify({
-        query,
-        variables,
-      }),
+  status?: string | null;
+  format?: string | null;
 
-      signal: controller.signal,
+  genres?: string[];
 
-      /*
-       * Cache AniList results for 5 minutes.
-       */
-      next: {
-        revalidate: 300,
-      },
-    });
+  description?: string | null;
 
-    if (!response.ok) {
-      throw new Error(
-        `AniList HTTP ${response.status}`
-      );
-    }
+  bannerImage?: string | null;
 
-    const json = await response.json();
+  coverImage: {
+    large: string;
+    extraLarge?: string | null;
+    medium?: string | null;
+  };
 
-    if (json.errors) {
-      console.error(
-        "AniList GraphQL error:",
-        json.errors
-      );
+  trailer?: {
+    id?: string | null;
+    site?: string | null;
+    thumbnail?: string | null;
+  } | null;
+};
 
-      return null;
-    }
+export type AnimeCatalogResult = {
+  pageInfo: {
+    currentPage: number;
+    hasNextPage: boolean;
+    lastPage: number;
+    total: number;
+  };
 
-    return json.data;
-  } catch (error) {
-    console.error(
-      "AniList fetch error:",
-      error
-    );
-
-    return null;
-  } finally {
-    clearTimeout(timeout);
-  }
-}
+  media: Anime[];
+};
 
 /* =========================================================
-   COMMON ANIME FIELDS
+   COMMON FIELDS
 ========================================================= */
 
 const mediaFields = `
@@ -109,12 +92,77 @@ const mediaFields = `
 `;
 
 /* =========================================================
-   TRENDING ANIME
+   ANILIST FETCH
+========================================================= */
+
+async function fetchAnime(
+  query: string,
+  variables: Variables = {}
+) {
+  const controller = new AbortController();
+
+  const timeout = setTimeout(() => {
+    controller.abort();
+  }, 15000);
+
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+      },
+
+      body: JSON.stringify({
+        query,
+        variables,
+      }),
+
+      signal: controller.signal,
+
+      next: {
+        revalidate: 300,
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(
+        `AniList HTTP ${response.status}`
+      );
+    }
+
+    const json = await response.json();
+
+    if (json.errors) {
+      console.error(
+        "AniList GraphQL error:",
+        json.errors
+      );
+
+      return null;
+    }
+
+    return json.data ?? null;
+  } catch (error) {
+    console.error(
+      "AniList fetch error:",
+      error
+    );
+
+    return null;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+/* =========================================================
+   TRENDING
 ========================================================= */
 
 export async function getTrendingAnime(
   perPage = 14
-) {
+): Promise<Anime[]> {
   const data = await fetchAnime(
     `
       query ($perPage: Int) {
@@ -137,16 +185,18 @@ export async function getTrendingAnime(
     }
   );
 
-  return data?.Page?.media ?? [];
+  return Array.isArray(data?.Page?.media)
+    ? data.Page.media
+    : [];
 }
 
 /* =========================================================
-   TOP RATED ANIME
+   TOP RATED
 ========================================================= */
 
 export async function getTopRatedAnime(
   perPage = 14
-) {
+): Promise<Anime[]> {
   const data = await fetchAnime(
     `
       query ($perPage: Int) {
@@ -170,16 +220,18 @@ export async function getTopRatedAnime(
     }
   );
 
-  return data?.Page?.media ?? [];
+  return Array.isArray(data?.Page?.media)
+    ? data.Page.media
+    : [];
 }
 
 /* =========================================================
-   LATEST / AIRING ANIME
+   LATEST / AIRING
 ========================================================= */
 
 export async function getLatestAnime(
   perPage = 14
-) {
+): Promise<Anime[]> {
   const data = await fetchAnime(
     `
       query ($perPage: Int) {
@@ -203,16 +255,18 @@ export async function getLatestAnime(
     }
   );
 
-  return data?.Page?.media ?? [];
+  return Array.isArray(data?.Page?.media)
+    ? data.Page.media
+    : [];
 }
 
 /* =========================================================
-   POPULAR ANIME
+   POPULAR
 ========================================================= */
 
 export async function getPopularAnime(
   perPage = 14
-) {
+): Promise<Anime[]> {
   const data = await fetchAnime(
     `
       query ($perPage: Int) {
@@ -235,18 +289,37 @@ export async function getPopularAnime(
     }
   );
 
-  return data?.Page?.media ?? [];
+  return Array.isArray(data?.Page?.media)
+    ? data.Page.media
+    : [];
 }
 
 /* =========================================================
-   ANIME CATALOG / BROWSE
+   BROWSE / CATALOG
 ========================================================= */
 
 export async function getAnimeCatalog(
   page = 1,
   perPage = 24,
   genre?: string
-) {
+): Promise<AnimeCatalogResult> {
+  const safePage =
+    Number.isFinite(page) && page > 0
+      ? Math.floor(page)
+      : 1;
+
+  const safePerPage =
+    Number.isFinite(perPage) &&
+    perPage > 0 &&
+    perPage <= 50
+      ? Math.floor(perPage)
+      : 24;
+
+  const cleanGenre =
+    typeof genre === "string"
+      ? genre.trim()
+      : "";
+
   const data = await fetchAnime(
     `
       query (
@@ -277,32 +350,45 @@ export async function getAnimeCatalog(
       }
     `,
     {
-      page,
-      perPage,
-      genre: genre || undefined,
+      page: safePage,
+      perPage: safePerPage,
+      genre: cleanGenre || undefined,
     }
   );
 
   return {
-    pageInfo:
-      data?.Page?.pageInfo ?? {
-        currentPage: page,
-        hasNextPage: false,
-        lastPage: page,
-        total: 0,
-      },
+    pageInfo: {
+      currentPage:
+        data?.Page?.pageInfo?.currentPage ??
+        safePage,
 
-    media: data?.Page?.media ?? [],
+      hasNextPage:
+        Boolean(
+          data?.Page?.pageInfo?.hasNextPage
+        ),
+
+      lastPage:
+        data?.Page?.pageInfo?.lastPage ??
+        safePage,
+
+      total:
+        data?.Page?.pageInfo?.total ??
+        0,
+    },
+
+    media: Array.isArray(data?.Page?.media)
+      ? data.Page.media
+      : [],
   };
 }
 
 /* =========================================================
-   SEARCH ANIME
+   SEARCH
 ========================================================= */
 
 export async function searchAnime(
   search: string
-) {
+): Promise<Anime[]> {
   const cleanSearch = search.trim();
 
   if (!cleanSearch) {
@@ -332,16 +418,22 @@ export async function searchAnime(
     }
   );
 
-  return data?.Page?.media ?? [];
+  return Array.isArray(data?.Page?.media)
+    ? data.Page.media
+    : [];
 }
 
 /* =========================================================
-   ANIME DETAILS + TRAILER
+   ANIME DETAILS
 ========================================================= */
 
 export async function getAnimeById(
   id: number
-) {
+): Promise<Anime | null> {
+  if (!Number.isFinite(id) || id <= 0) {
+    return null;
+  }
+
   const data = await fetchAnime(
     `
       query ($id: Int) {

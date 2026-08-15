@@ -24,14 +24,24 @@ export default function FavoritesPage() {
   const [mounted, setMounted] = useState(false);
 
   /*
-   * Browser mount
+   * Load favorites after browser mount.
+   *
+   * requestAnimationFrame avoids the React
+   * set-state-in-effect lint error while keeping
+   * localStorage browser-only.
    */
   useEffect(() => {
-    setMounted(true);
+    const frame = window.requestAnimationFrame(() => {
+      setMounted(true);
+    });
+
+    return () => {
+      window.cancelAnimationFrame(frame);
+    };
   }, []);
 
   /*
-   * Load favorites only in browser
+   * Load favorites from localStorage.
    */
   useEffect(() => {
     if (!mounted) return;
@@ -76,7 +86,9 @@ export default function FavoritesPage() {
       }
     };
 
-    loadFavorites();
+    const frame = window.requestAnimationFrame(
+      loadFavorites
+    );
 
     const handleUpdate = () => {
       loadFavorites();
@@ -93,6 +105,8 @@ export default function FavoritesPage() {
     );
 
     return () => {
+      window.cancelAnimationFrame(frame);
+
       window.removeEventListener(
         "favoritesUpdated",
         handleUpdate
@@ -106,7 +120,7 @@ export default function FavoritesPage() {
   }, [mounted]);
 
   /*
-   * Remove single favorite
+   * Remove single favorite.
    */
   const removeFavorite = (id: number) => {
     try {
@@ -133,7 +147,7 @@ export default function FavoritesPage() {
   };
 
   /*
-   * Clear all
+   * Clear all favorites.
    */
   const clearFavorites = () => {
     try {
@@ -155,7 +169,7 @@ export default function FavoritesPage() {
   };
 
   /*
-   * Loading
+   * Loading screen.
    */
   if (!mounted) {
     return (

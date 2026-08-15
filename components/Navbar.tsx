@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
@@ -44,43 +45,43 @@ const navItems = [
   },
 ];
 
+function readFavoritesCount(): number {
+  try {
+    const saved =
+      window.localStorage.getItem("favorites");
+
+    if (!saved) {
+      return 0;
+    }
+
+    const parsed: unknown = JSON.parse(saved);
+
+    return Array.isArray(parsed)
+      ? parsed.length
+      : 0;
+  } catch {
+    return 0;
+  }
+}
+
 export default function Navbar() {
   const pathname = usePathname();
   const { user, isLoaded } = useUser();
 
   const [menuOpen, setMenuOpen] = useState(false);
-  const [favoritesCount, setFavoritesCount] = useState(0);
+  const [favoritesCount, setFavoritesCount] =
+    useState(0);
 
-  /* -------------------------------------------------------
-     FAVORITES COUNT
-  ------------------------------------------------------- */
-
-  const updateFavoritesCount = () => {
-    try {
-      const saved = window.localStorage.getItem("favorites");
-
-      if (!saved) {
-        setFavoritesCount(0);
-        return;
-      }
-
-      const parsed = JSON.parse(saved);
-
-      if (Array.isArray(parsed)) {
-        setFavoritesCount(parsed.length);
-      } else {
-        setFavoritesCount(0);
-      }
-    } catch {
-      setFavoritesCount(0);
-    }
-  };
-
+  /*
+   * FAVORITES COUNT
+   */
   useEffect(() => {
-    updateFavoritesCount();
+    const timer = window.setTimeout(() => {
+      setFavoritesCount(readFavoritesCount());
+    }, 0);
 
     const handleFavoritesUpdate = () => {
-      updateFavoritesCount();
+      setFavoritesCount(readFavoritesCount());
     };
 
     window.addEventListener(
@@ -94,6 +95,8 @@ export default function Navbar() {
     );
 
     return () => {
+      window.clearTimeout(timer);
+
       window.removeEventListener(
         "favoritesUpdated",
         handleFavoritesUpdate
@@ -106,18 +109,22 @@ export default function Navbar() {
     };
   }, []);
 
-  /* -------------------------------------------------------
-     CLOSE MOBILE MENU ON ROUTE CHANGE
-  ------------------------------------------------------- */
-
+  /*
+   * CLOSE MOBILE MENU WHEN ROUTE CHANGES
+   */
   useEffect(() => {
-    setMenuOpen(false);
+    const timer = window.setTimeout(() => {
+      setMenuOpen(false);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, [pathname]);
 
-  /* -------------------------------------------------------
-     ACTIVE ROUTE
-  ------------------------------------------------------- */
-
+  /*
+   * ACTIVE ROUTE
+   */
   const isActive = (href: string) => {
     if (href === "/") {
       return pathname === "/";
@@ -129,10 +136,9 @@ export default function Navbar() {
     );
   };
 
-  /* -------------------------------------------------------
-     AI CHAT
-  ------------------------------------------------------- */
-
+  /*
+   * AI CHAT
+   */
   const openAIChat = () => {
     window.dispatchEvent(
       new CustomEvent("openAnimeHubAI")
@@ -141,13 +147,8 @@ export default function Navbar() {
 
   return (
     <header className="sticky top-0 z-[90] w-full border-b border-white/10 bg-black/90 backdrop-blur-xl">
-
       <div className="mx-auto flex h-[68px] max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-
-        {/* =================================================
-            LOGO
-        ================================================= */}
-
+        {/* LOGO */}
         <Link
           href="/"
           className="group flex shrink-0 items-center gap-3"
@@ -171,10 +172,7 @@ export default function Navbar() {
           </div>
         </Link>
 
-        {/* =================================================
-            DESKTOP NAVIGATION
-        ================================================= */}
-
+        {/* DESKTOP NAVIGATION */}
         <nav
           className="hidden items-center gap-1 lg:flex"
           aria-label="Main navigation"
@@ -220,14 +218,9 @@ export default function Navbar() {
           })}
         </nav>
 
-        {/* =================================================
-            RIGHT ACTIONS
-        ================================================= */}
-
+        {/* RIGHT ACTIONS */}
         <div className="flex items-center gap-2">
-
           {/* SEARCH */}
-
           <Link
             href="/search"
             aria-label="Search Anime"
@@ -237,7 +230,6 @@ export default function Navbar() {
           </Link>
 
           {/* AI */}
-
           <button
             type="button"
             onClick={openAIChat}
@@ -252,7 +244,6 @@ export default function Navbar() {
           </button>
 
           {/* USER */}
-
           {isLoaded && user && (
             <Link
               href="/profile"
@@ -264,9 +255,11 @@ export default function Navbar() {
               }`}
             >
               {user.imageUrl ? (
-                <img
+                <Image
                   src={user.imageUrl}
                   alt="Profile"
+                  width={40}
+                  height={40}
                   className="h-full w-full object-cover"
                 />
               ) : (
@@ -279,7 +272,6 @@ export default function Navbar() {
           )}
 
           {/* MOBILE MENU */}
-
           <button
             type="button"
             onClick={() =>
@@ -302,14 +294,10 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* =================================================
-          MOBILE NAVIGATION
-      ================================================= */}
-
+      {/* MOBILE NAVIGATION */}
       {menuOpen && (
         <div className="border-t border-white/10 bg-black/95 lg:hidden">
           <div className="mx-auto max-w-7xl px-4 py-4 sm:px-6">
-
             <nav
               className="space-y-1"
               aria-label="Mobile navigation"
@@ -335,7 +323,8 @@ export default function Navbar() {
 
                     <span>{item.label}</span>
 
-                    {item.href === "/favorites" &&
+                    {item.href ===
+                      "/favorites" &&
                       favoritesCount > 0 && (
                         <span className="ml-auto rounded-full bg-orange-500 px-2 py-1 text-[9px] font-black text-black">
                           {favoritesCount > 99
@@ -348,7 +337,6 @@ export default function Navbar() {
               })}
 
               {/* MOBILE SEARCH */}
-
               <Link
                 href="/search"
                 className="flex items-center gap-3 rounded-xl px-4 py-3.5 text-sm font-semibold text-white/65 transition hover:bg-white/[0.05] hover:text-white"
@@ -359,7 +347,6 @@ export default function Navbar() {
               </Link>
 
               {/* MOBILE AI */}
-
               <button
                 type="button"
                 onClick={() => {
@@ -374,16 +361,17 @@ export default function Navbar() {
               </button>
 
               {/* MOBILE PROFILE */}
-
               {isLoaded && user && (
                 <Link
                   href="/profile"
                   className="mt-2 flex items-center gap-3 border-t border-white/10 px-4 pt-4 text-sm font-semibold text-white/65"
                 >
                   {user.imageUrl ? (
-                    <img
+                    <Image
                       src={user.imageUrl}
                       alt="Profile"
+                      width={32}
+                      height={32}
                       className="h-8 w-8 rounded-full object-cover"
                     />
                   ) : (

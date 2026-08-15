@@ -38,17 +38,24 @@ const supabaseKey =
 
 const supabase =
   supabaseUrl && supabaseKey
-    ? createClient(supabaseUrl, supabaseKey)
+    ? createClient(
+        supabaseUrl,
+        supabaseKey
+      )
     : null;
 
-const CHANNEL_NAME = "animehub-community-room";
+const CHANNEL_NAME =
+  "animehub-community-room";
 
 function formatTime(date: string) {
   try {
-    return new Date(date).toLocaleTimeString([], {
-      hour: "2-digit",
-      minute: "2-digit",
-    });
+    return new Date(date).toLocaleTimeString(
+      [],
+      {
+        hour: "2-digit",
+        minute: "2-digit",
+      }
+    );
   } catch {
     return "";
   }
@@ -56,23 +63,20 @@ function formatTime(date: string) {
 
 export default function CommunityChat() {
   const [open, setOpen] = useState(false);
-
   const [name, setName] = useState("");
-
   const [message, setMessage] = useState("");
 
-  const [messages, setMessages] = useState<
-    CommunityMessage[]
-  >([]);
+  const [messages, setMessages] =
+    useState<CommunityMessage[]>([]);
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] =
+    useState(false);
 
   const [loadingMessages, setLoadingMessages] =
     useState(true);
 
-  const [typingUsers, setTypingUsers] = useState<
-    PresenceUser[]
-  >([]);
+  const [typingUsers, setTypingUsers] =
+    useState<PresenceUser[]>([]);
 
   const messagesEndRef =
     useRef<HTMLDivElement | null>(null);
@@ -86,30 +90,32 @@ export default function CommunityChat() {
     );
 
   /*
-   * ==============================
    * LOAD SAVED NAME
-   * ==============================
    */
 
   useEffect(() => {
-    try {
-      const savedName =
-        localStorage.getItem(
-          "animehub-chat-name"
-        );
+    const timer = window.setTimeout(() => {
+      try {
+        const savedName =
+          localStorage.getItem(
+            "animehub-chat-name"
+          );
 
-      if (savedName) {
-        setName(savedName);
+        if (savedName) {
+          setName(savedName);
+        }
+      } catch {
+        // Ignore localStorage errors.
       }
-    } catch {
-      // Ignore localStorage errors.
-    }
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, []);
 
   /*
-   * ==============================
    * LOAD MESSAGES
-   * ==============================
    */
 
   const loadMessages = async () => {
@@ -122,7 +128,8 @@ export default function CommunityChat() {
         }
       );
 
-      const data = await response.json();
+      const data =
+        await response.json();
 
       if (!response.ok) {
         throw new Error(
@@ -131,8 +138,14 @@ export default function CommunityChat() {
         );
       }
 
-      if (Array.isArray(data?.messages)) {
-        setMessages(data.messages);
+      if (
+        Array.isArray(
+          data?.messages
+        )
+      ) {
+        setMessages(
+          data.messages
+        );
       }
     } catch (error) {
       console.error(
@@ -145,17 +158,17 @@ export default function CommunityChat() {
   };
 
   useEffect(() => {
-    loadMessages();
+    const timer = window.setTimeout(() => {
+      void loadMessages();
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timer);
+    };
   }, []);
 
   /*
-   * ==============================
    * SUPABASE REALTIME
-   *
-   * IMPORTANT:
-   * We use BROADCAST instead of
-   * postgres_changes.
-   * ==============================
    */
 
   useEffect(() => {
@@ -168,26 +181,27 @@ export default function CommunityChat() {
     }
 
     const channel =
-      supabase.channel(CHANNEL_NAME, {
-        config: {
-          broadcast: {
-            self: false,
-          },
-          presence: {
-            key:
-              Math.random()
+      supabase.channel(
+        CHANNEL_NAME,
+        {
+          config: {
+            broadcast: {
+              self: false,
+            },
+            presence: {
+              key: Math.random()
                 .toString(36)
                 .substring(2),
+            },
           },
-        },
-      });
+        }
+      );
 
-    channelRef.current = channel;
+    channelRef.current =
+      channel;
 
     /*
-     * ==============================
      * NEW MESSAGE
-     * ==============================
      */
 
     channel.on(
@@ -210,29 +224,34 @@ export default function CommunityChat() {
           return;
         }
 
-        setMessages((current) => {
-          const exists = current.some(
-            (item) =>
-              String(item.id) ===
-              String(incoming.id)
-          );
+        setMessages(
+          (current) => {
+            const exists =
+              current.some(
+                (item) =>
+                  String(
+                    item.id
+                  ) ===
+                  String(
+                    incoming.id
+                  )
+              );
 
-          if (exists) {
-            return current;
+            if (exists) {
+              return current;
+            }
+
+            return [
+              ...current,
+              incoming,
+            ];
           }
-
-          return [
-            ...current,
-            incoming,
-          ];
-        });
+        );
       }
     );
 
     /*
-     * ==============================
      * TYPING
-     * ==============================
      */
 
     channel.on(
@@ -260,31 +279,36 @@ export default function CommunityChat() {
         }
 
         const isTyping =
-          Boolean(data.typing);
+          Boolean(
+            data.typing
+          );
 
-        setTypingUsers((current) => {
-          const filtered =
-            current.filter(
-              (user) =>
-                user.name !==
-                typingName
-            );
+        setTypingUsers(
+          (current) => {
+            const filtered =
+              current.filter(
+                (user) =>
+                  user.name !==
+                  typingName
+              );
 
-          if (!isTyping) {
-            return filtered;
+            if (!isTyping) {
+              return filtered;
+            }
+
+            return [
+              ...filtered,
+              {
+                name:
+                  typingName,
+                typing: true,
+              },
+            ];
           }
-
-          return [
-            ...filtered,
-            {
-              name: typingName,
-              typing: true,
-            },
-          ];
-        });
+        );
 
         if (isTyping) {
-          setTimeout(() => {
+          window.setTimeout(() => {
             setTypingUsers(
               (current) =>
                 current.filter(
@@ -298,48 +322,46 @@ export default function CommunityChat() {
       }
     );
 
-    /*
-     * ==============================
-     * SUBSCRIBE
-     * ==============================
-     */
-
-    channel.subscribe((status) => {
-      console.log(
-        "AnimeHub Community Realtime:",
-        status
-      );
-
-      if (status === "SUBSCRIBED") {
+    channel.subscribe(
+      (status) => {
         console.log(
-          "AnimeHub Community Chat connected."
+          "AnimeHub Community Realtime:",
+          status
         );
-      }
 
-      if (
-        status ===
-        "CHANNEL_ERROR"
-      ) {
-        console.warn(
-          "Supabase Realtime unavailable. Chat will continue using database polling."
-        );
-      }
+        if (
+          status ===
+          "SUBSCRIBED"
+        ) {
+          console.log(
+            "AnimeHub Community Chat connected."
+          );
+        }
 
-      if (status === "TIMED_OUT") {
-        console.warn(
-          "Supabase Realtime timed out."
-        );
-      }
-    });
+        if (
+          status ===
+          "CHANNEL_ERROR"
+        ) {
+          console.warn(
+            "Supabase Realtime unavailable. Chat will continue using database polling."
+          );
+        }
 
-    /*
-     * ==============================
-     * CLEANUP
-     * ==============================
-     */
+        if (
+          status ===
+          "TIMED_OUT"
+        ) {
+          console.warn(
+            "Supabase Realtime timed out."
+          );
+        }
+      }
+    );
 
     return () => {
-      if (typingTimeoutRef.current) {
+      if (
+        typingTimeoutRef.current
+      ) {
         clearTimeout(
           typingTimeoutRef.current
         );
@@ -353,46 +375,42 @@ export default function CommunityChat() {
         // Ignore cleanup errors.
       }
 
-      channelRef.current = null;
+      channelRef.current =
+        null;
     };
   }, []);
 
   /*
-   * ==============================
    * POLLING FALLBACK
-   *
-   * Even if Realtime fails,
-   * messages can still appear.
-   * ==============================
    */
 
   useEffect(() => {
     const interval =
-      setInterval(() => {
-        loadMessages();
+      window.setInterval(() => {
+        void loadMessages();
       }, 5000);
 
     return () => {
-      clearInterval(interval);
+      window.clearInterval(
+        interval
+      );
     };
   }, []);
 
   /*
-   * ==============================
    * AUTO SCROLL
-   * ==============================
    */
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({
-      behavior: "smooth",
-    });
+    messagesEndRef.current?.scrollIntoView(
+      {
+        behavior: "smooth",
+      }
+    );
   }, [messages]);
 
   /*
-   * ==============================
    * SEND TYPING STATUS
-   * ==============================
    */
 
   const sendTypingStatus = async (
@@ -440,27 +458,28 @@ export default function CommunityChat() {
 
     if (typing) {
       typingTimeoutRef.current =
-        setTimeout(async () => {
-          try {
-            await channel.send({
-              type: "broadcast",
-              event: "typing",
-              payload: {
-                name: cleanName,
-                typing: false,
-              },
-            });
-          } catch {
-            // Ignore.
-          }
-        }, 2000);
+        setTimeout(
+          async () => {
+            try {
+              await channel.send({
+                type: "broadcast",
+                event: "typing",
+                payload: {
+                  name: cleanName,
+                  typing: false,
+                },
+              });
+            } catch {
+              // Ignore.
+            }
+          },
+          2000
+        );
     }
   };
 
   /*
-   * ==============================
    * NAME CHANGE
-   * ==============================
    */
 
   const handleNameChange = (
@@ -479,9 +498,7 @@ export default function CommunityChat() {
   };
 
   /*
-   * ==============================
    * SEND MESSAGE
-   * ==============================
    */
 
   const sendMessage = async () => {
@@ -510,10 +527,6 @@ export default function CommunityChat() {
       // Ignore.
     }
 
-    /*
-     * Stop typing
-     */
-
     const channel =
       channelRef.current;
 
@@ -533,10 +546,6 @@ export default function CommunityChat() {
     }
 
     try {
-      /*
-       * Save message in database
-       */
-
       const response =
         await fetch(
           "/api/community-chat",
@@ -548,7 +557,8 @@ export default function CommunityChat() {
             },
             body: JSON.stringify({
               name: cleanName,
-              message: cleanMessage,
+              message:
+                cleanMessage,
             }),
           }
         );
@@ -568,34 +578,30 @@ export default function CommunityChat() {
           | CommunityMessage
           | undefined;
 
-      /*
-       * Add our own message
-       */
-
       if (newMessage) {
-        setMessages((current) => {
-          const exists =
-            current.some(
-              (item) =>
-                String(item.id) ===
-                String(
-                  newMessage.id
-                )
-            );
+        setMessages(
+          (current) => {
+            const exists =
+              current.some(
+                (item) =>
+                  String(
+                    item.id
+                  ) ===
+                  String(
+                    newMessage.id
+                  )
+              );
 
-          if (exists) {
-            return current;
+            if (exists) {
+              return current;
+            }
+
+            return [
+              ...current,
+              newMessage,
+            ];
           }
-
-          return [
-            ...current,
-            newMessage,
-          ];
-        });
-
-        /*
-         * Tell other users
-         */
+        );
 
         if (channel) {
           try {
@@ -632,9 +638,7 @@ export default function CommunityChat() {
   };
 
   /*
-   * ==============================
    * ENTER KEY
-   * ==============================
    */
 
   const handleKeyDown = (
@@ -646,14 +650,12 @@ export default function CommunityChat() {
     ) {
       event.preventDefault();
 
-      sendMessage();
+      void sendMessage();
     }
   };
 
   /*
-   * ==============================
    * UI
-   * ==============================
    */
 
   return (
@@ -816,7 +818,7 @@ export default function CommunityChat() {
                 type="text"
                 value={message}
                 onChange={(event) =>
-                  sendTypingStatus(
+                  void sendTypingStatus(
                     event.target.value
                   )
                 }
@@ -831,8 +833,8 @@ export default function CommunityChat() {
 
               <button
                 type="button"
-                onClick={
-                  sendMessage
+                onClick={() =>
+                  void sendMessage()
                 }
                 disabled={
                   loading ||
