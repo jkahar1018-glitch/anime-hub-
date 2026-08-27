@@ -1,8 +1,7 @@
 import type { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl =
-    "https://anime-hub-xnor-kzuvbd93k-jkahar1018-glitchs-projects.vercel.app";
+  const baseUrl = "https://anime-hub-prq5-eight.vercel.app";
 
   return [
     {
