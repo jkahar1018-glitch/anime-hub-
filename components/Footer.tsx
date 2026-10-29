@@ -1,175 +1,167 @@
-"use client";
+﻿"use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import {
   FaGithub,
   FaInstagram,
   FaTwitter,
   FaDiscord,
+  FaEnvelope,
+  FaPhone,
 } from "react-icons/fa";
+
+const exploreLinks = [
+  { label: "Home", href: "/" },
+  { label: "Browse Anime", href: "/browse" },
+  { label: "Search", href: "/search" },
+  { label: "Trending", href: "/#trending" },
+  { label: "India Anime Picks", href: "/#hindi" },
+  { label: "New & Airing", href: "/#latest" },
+  { label: "Top Rated", href: "/#top-rated" },
+];
+
+const animeLinks = [
+  { label: "My List", href: "/watchlist" },
+  { label: "Favorites", href: "/favorites" },
+  { label: "Watch History", href: "/watch-history" },
+  { label: "Profile", href: "/profile" },
+];
+
+const socialLinks = [
+  { label: "GitHub", href: "https://github.com/jkahar1018-glitch", icon: FaGithub },
+  { label: "Instagram", href: "https://www.instagram.com/shivay_kahar_/", icon: FaInstagram },
+  { label: "Twitter", href: "https://x.com/shivayxkahar", icon: FaTwitter },
+  { label: "Discord", href: "https://discord.com", icon: FaDiscord },
+];
 
 export default function Footer() {
   return (
-    <footer className="mt-20 border-t border-white/10 bg-[#050505] text-white">
-      <div className="mx-auto w-full max-w-7xl px-6 py-14 sm:px-8 lg:px-10">
-        {/* TOP */}
-        <div className="grid gap-12 md:grid-cols-4">
-          {/* BRAND */}
-          <div className="md:col-span-2">
-            <Link href="/" className="inline-block">
-              <div className="leading-none">
-                <div className="text-[11px] font-black tracking-[0.45em] text-white/50">
-                  ANIME
-                </div>
+    <footer className="relative mt-20 overflow-hidden border-t border-purple-500/20 bg-[#07060d] text-white">
+      <div className="pointer-events-none absolute -top-32 left-1/4 h-64 w-64 rounded-full bg-purple-700/10 blur-[100px]" />
+      <div className="pointer-events-none absolute -right-20 bottom-0 h-64 w-64 rounded-full bg-violet-600/10 blur-[100px]" />
 
-                <div className="text-4xl font-black tracking-tight">
-                  HUB<span className="text-orange-500">.</span>
-                </div>
-              </div>
+      <div className="relative mx-auto w-full max-w-7xl px-6 py-14 sm:px-8 lg:px-10">
+        <div className="grid gap-12 md:grid-cols-4">
+          <div className="md:col-span-2">
+                        <Link href="/" className="group inline-flex max-w-full items-center">
+              <Image
+                src="/animehub-logo.png"
+                alt="AnimeHub - Your Anime Universe"
+                width={334}
+                height={85}
+                className="h-auto w-[240px] max-w-full object-contain mix-blend-screen transition-transform duration-300 group-hover:scale-[1.02] sm:w-[300px]"
+              />
             </Link>
 
-            <p className="mt-5 max-w-md text-sm leading-7 text-white/50">
-              Discover anime, build your list, and find your next
-              favorite series. Explore trending shows, top-rated
-              anime and more.
+            <p className="mt-5 max-w-md text-sm leading-7 text-white/55">
+              Discover your next favorite anime. Explore trending shows,
+              find hidden gems, and build your own anime universe with AnimeHub.
             </p>
 
-            {/* SOCIAL */}
             <div className="mt-7 flex items-center gap-3">
-              <a
-                href="#"
-                aria-label="GitHub"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition hover:border-orange-500/50 hover:bg-orange-500 hover:text-black"
-              >
-                <FaGithub />
-              </a>
-
-              <a
-                href="#"
-                aria-label="Instagram"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition hover:border-orange-500/50 hover:bg-orange-500 hover:text-black"
-              >
-                <FaInstagram />
-              </a>
-
-              <a
-                href="#"
-                aria-label="Twitter"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition hover:border-orange-500/50 hover:bg-orange-500 hover:text-black"
-              >
-                <FaTwitter />
-              </a>
-
-              <a
-                href="#"
-                aria-label="Discord"
-                className="flex h-10 w-10 items-center justify-center rounded-full border border-white/10 bg-white/5 text-white/60 transition hover:border-orange-500/50 hover:bg-orange-500 hover:text-black"
-              >
-                <FaDiscord />
-              </a>
+              {socialLinks.map(({ label, href, icon: Icon }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-white/[0.04] text-white/60 transition duration-300 hover:-translate-y-1 hover:border-purple-400/60 hover:bg-purple-500/15 hover:text-purple-300"
+                >
+                  <Icon size={17} />
+                </a>
+              ))}
             </div>
           </div>
 
-          {/* EXPLORE */}
           <div>
-            <h3 className="mb-5 text-sm font-bold uppercase tracking-wider text-white">
+            <h3 className="mb-5 text-xs font-black uppercase tracking-[0.2em] text-purple-300">
               Explore
             </h3>
-
             <div className="flex flex-col gap-3">
-              <Link
-                href="/"
-                className="text-sm text-white/50 transition hover:text-orange-500"
-              >
-                Home
-              </Link>
-
-              <Link
-                href="/anime"
-                className="text-sm text-white/50 transition hover:text-orange-500"
-              >
-                Browse Anime
-              </Link>
-
-              <Link
-                href="/search"
-                className="text-sm text-white/50 transition hover:text-orange-500"
-              >
-                Search
-              </Link>
-
-              <Link
-                href="/trending"
-                className="text-sm text-white/50 transition hover:text-orange-500"
-              >
-                Trending
-              </Link>
-
-              <Link
-                href="/top-rated"
-                className="text-sm text-white/50 transition hover:text-orange-500"
-              >
-                Top Rated
-              </Link>
+              {exploreLinks.map(({ label, href }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  className="w-fit text-sm text-white/55 transition hover:translate-x-1 hover:text-purple-300"
+                >
+                  {label}
+                </Link>
+              ))}
             </div>
           </div>
 
-          {/* MY ANIME */}
           <div>
-            <h3 className="mb-5 text-sm font-bold uppercase tracking-wider text-white">
+            <h3 className="mb-5 text-xs font-black uppercase tracking-[0.2em] text-purple-300">
               My Anime
             </h3>
-
             <div className="flex flex-col gap-3">
-              <Link
-                href="/my-list"
-                className="text-sm text-white/50 transition hover:text-orange-500"
-              >
-                My List
-              </Link>
-
-              <Link
-                href="/favorites"
-                className="text-sm text-white/50 transition hover:text-orange-500"
-              >
-                Favorites
-              </Link>
-
-              <Link
-                href="/history"
-                className="text-sm text-white/50 transition hover:text-orange-500"
-              >
-                Watch History
-              </Link>
-
-              <Link
-                href="/profile"
-                className="text-sm text-white/50 transition hover:text-orange-500"
-              >
-                Profile
-              </Link>
+              {animeLinks.map(({ label, href }) => (
+                <Link
+                  key={label}
+                  href={href}
+                  className="w-fit text-sm text-white/55 transition hover:translate-x-1 hover:text-purple-300"
+                >
+                  {label}
+                </Link>
+              ))}
             </div>
           </div>
         </div>
 
-        {/* DIVIDER */}
-        <div className="my-10 h-px bg-white/10" />
+        <div className="my-10 h-px bg-gradient-to-r from-transparent via-purple-500/30 to-transparent" />
 
-        {/* BOTTOM */}
-        <div className="flex flex-col gap-4 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
+        <div className="grid gap-6 rounded-2xl border border-white/[0.08] bg-white/[0.025] p-5 sm:grid-cols-2 sm:p-6">
+          <div>
+            <h3 className="text-xs font-black uppercase tracking-[0.2em] text-purple-300">
+              Get in Touch
+            </h3>
+            <p className="mt-2 text-sm text-white/50">
+              Have a question or feedback? Contact AnimeHub.
+            </p>
+          </div>
+
+          <div className="flex flex-col gap-4 sm:items-end sm:justify-center">
+            <a
+              href="mailto:jkahar.1018@gmail.com"
+              className="flex items-center gap-3 text-sm text-white/70 transition hover:text-purple-300"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/15 text-purple-300">
+                <FaEnvelope />
+              </span>
+              <span className="break-all">jkahar.1018@gmail.com</span>
+            </a>
+
+            <a
+              href="tel:834720071018"
+              className="flex items-center gap-3 text-sm text-white/70 transition hover:text-purple-300"
+            >
+              <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-purple-500/15 text-purple-300">
+                <FaPhone />
+              </span>
+              <span>834720071018</span>
+            </a>
+          </div>
+        </div>
+
+        <div className="mt-8 flex flex-col gap-3 text-xs text-white/40 sm:flex-row sm:items-center sm:justify-between">
           <p>
-            © {new Date().getFullYear()} AnimeHub. All rights reserved.
+            {"©"} {new Date().getFullYear()} AnimeHub. All rights reserved.
           </p>
 
           <p>
             Anime metadata powered by{" "}
-            <span className="font-semibold text-white/60">
-              AniList
-            </span>
-            .
+            <span className="font-semibold text-purple-300/80">AniList</span>.
           </p>
         </div>
       </div>
     </footer>
   );
 }
+
+
+
+
+
+
